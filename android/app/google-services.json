@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "752901108623",
+    "project_id": "agus-86535",
+    "storage_bucket": "agus-86535.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:752901108623:android:0b8d5cbc79fce3748c11fa",
+        "android_client_info": {
+          "package_name": "com.agus.agus"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "752901108623-deu88hfhglliuqh50nlhb05dn0nvjtli.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCI4F2EfSq5YRgKWGkK6Vzs_CV7nj7SLmA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "752901108623-deu88hfhglliuqh50nlhb05dn0nvjtli.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

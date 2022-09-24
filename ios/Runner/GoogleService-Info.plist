@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CLIENT_ID</key>
+	<string>752901108623-c1ljaftc3plhi30pa21blrmsnu71kc86.apps.googleusercontent.com</string>
+	<key>REVERSED_CLIENT_ID</key>
+	<string>com.googleusercontent.apps.752901108623-c1ljaftc3plhi30pa21blrmsnu71kc86</string>
+	<key>API_KEY</key>
+	<string>AIzaSyDAe6Hi1H-M107M9IyF_1bS9UfpYkbG9rM</string>
+	<key>GCM_SENDER_ID</key>
+	<string>752901108623</string>
+	<key>PLIST_VERSION</key>
+	<string>1</string>
+	<key>BUNDLE_ID</key>
+	<string>com.agus.agus</string>
+	<key>PROJECT_ID</key>
+	<string>agus-86535</string>
+	<key>STORAGE_BUCKET</key>
+	<string>agus-86535.appspot.com</string>
+	<key>IS_ADS_ENABLED</key>
+	<false></false>
+	<key>IS_ANALYTICS_ENABLED</key>
+	<false></false>
+	<key>IS_APPINVITE_ENABLED</key>
+	<true></true>
+	<key>IS_GCM_ENABLED</key>
+	<true></true>
+	<key>IS_SIGNIN_ENABLED</key>
+	<true></true>
+	<key>GOOGLE_APP_ID</key>
+	<string>1:752901108623:ios:6cbb472a0416c3e28c11fa</string>
+</dict>
+</plist>
