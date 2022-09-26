@@ -1,7 +1,11 @@
+import 'package:agus/constants/constant.dart';
+import 'package:agus/route_generator.dart';
+import 'package:agus/routes.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flagsmith/flagsmith.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -25,7 +29,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final Future<FirebaseApp> initFirebase = Firebase.initializeApp();
-
+    
     return MaterialApp(
       title: 'Agus',
       theme: ThemeData(
@@ -66,6 +70,9 @@ class _MyHomePageState extends State<MyHomePage> {
   int _counter = 0;
   late FlagsmithClient flagsmithClient;
   bool buttonStat = false;
+
+
+
 
   featureButton() async {
     await flagsmithClient.getFeatureFlags(reload: true);
@@ -108,6 +115,7 @@ class _MyHomePageState extends State<MyHomePage> {
     initFlagSmith();
   }
 
+  
   initFlagSmith() async {
     flagsmithClient = FlagsmithClient(
       apiKey: 'MRmm4ZU3GZaYPSbJBWx3hY',
@@ -121,39 +129,56 @@ class _MyHomePageState extends State<MyHomePage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(widget.title),
-      ),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            const Text(
-              'You have pushed the button this many times:',
-            ),
-            Text(
-              '$_counter',
-              style: Theme.of(context).textTheme.headline4,
-            ),
-            Visibility(
-                visible: buttonStat,
-                child: ElevatedButton(
-                  style: raisedButtonStyle,
-                  onPressed: () {},
-                  child: const Text('Looks like a RaisedButton'),
-                ))
-          ],
+    return MaterialApp(
+      builder: (context, child) {
+        return ScrollConfiguration(
+          behavior: MyBehavior(),
+          child: child!,
+        );
+      },
+      title: 'Driving Lesson Routes',
+      initialRoute: Routes.splash,
+      onGenerateRoute: RouteGenerator.generateRoute,
+      debugShowCheckedModeBanner: false,
+      theme: ThemeData(
+        brightness: Brightness.light,
+        platform: TargetPlatform.iOS,
+        scaffoldBackgroundColor: Colors.white,
+        toggleableActiveColor: kColorPrimary,
+        appBarTheme: const AppBarTheme(
+          elevation: 1,
+          color: Colors.white,
+          iconTheme: IconThemeData(
+            color: kColorPrimary,
+          ),
+          actionsIconTheme: IconThemeData(
+            color: kColorPrimary,
+          ), systemOverlayStyle: SystemUiOverlayStyle.dark,
+        ),
+        dividerColor: Colors.grey[300],
+       
+        // ignore: prefer_const_constructors
+        iconTheme: IconThemeData(
+          color: kColorBlue,
+        ),
+        fontFamily: 'NunitoSans',
+        cardTheme: CardTheme(
+          elevation: 0,
+          color: Color(0xffEBF2F5),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(4),
+            //side: BorderSide(width: 1, color: Colors.grey[200]),
+          ),
         ),
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          featureButton();
-          _incrementCounter();
-        },
-        tooltip: 'Increment',
-        child: const Icon(Icons.add),
-      ), // This trailing comma makes auto-formatting nicer for build methods.
     );
+  }
+}
+
+class MyBehavior extends ScrollBehavior {
+  @override
+  Widget buildViewportChrome(
+      BuildContext context, Widget child, AxisDirection axisDirection) {
+    return child;
   }
 }
