@@ -33,6 +33,8 @@ dependencies:
   # datbase plogins
   firebase_core: ^1.23.0
   cloud_firestore: ^3.4.9
+  #feature flags
+  flagsmith:
 
 
   # The following adds the Cupertino Icons font to your application.
