@@ -1,5 +1,6 @@
 import 'package:agus/admin/views/home.dart';
 import 'package:agus/constants/string.dart';
+import 'package:agus/routes.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/src/foundation/key.dart';
 import 'package:flutter/src/widgets/framework.dart';
@@ -18,12 +19,9 @@ class _SplashScreenState extends State<SplashScreen> {
 
     Future.delayed(const Duration(seconds: 5), () {
       if (debugTo == 'web') {
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => WebHome()),
-        );
+        Navigator.of(context).pushReplacementNamed(Routes.web);
       }else if(debugTo == 'reader') {
-
+        
       }else{
 
       }
