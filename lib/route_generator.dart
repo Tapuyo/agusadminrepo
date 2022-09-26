@@ -1,6 +1,7 @@
 
 import 'package:agus/admin/views/home.dart';
 import 'package:agus/routes.dart';
+import 'package:agus/splash.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
@@ -10,7 +11,7 @@ class RouteGenerator {
 
     switch (settings.name) {
       case Routes.splash:
-        return CupertinoPageRoute(builder: (_) => const WebHome());
+        return CupertinoPageRoute(builder: (_) => const SplashScreen());
       case Routes.web:
         return CupertinoPageRoute(builder: (_) => const WebHome());
 
