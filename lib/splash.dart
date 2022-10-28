@@ -17,23 +17,22 @@ class _SplashScreenState extends State<SplashScreen> {
   void initState() {
     super.initState();
 
-    Future.delayed(const Duration(seconds: 5), () {
+    Future.delayed(const Duration(seconds: 1), () {
       if (debugTo == 'web') {
         Navigator.of(context).pushReplacementNamed(Routes.web);
-      }else if(debugTo == 'reader') {
-        
-      }else{
-
-      }
+      } else if (debugTo == 'reader') {
+      } else {}
     });
   }
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      width: MediaQuery.of(context).size.width,
-      height: MediaQuery.of(context).size.height,
-      child: const Center(child: CircularProgressIndicator()),
+    return Scaffold(
+      body: SizedBox(
+        width: MediaQuery.of(context).size.width,
+        height: MediaQuery.of(context).size.height,
+        child: const Center(child: CircularProgressIndicator()),
+      ),
     );
   }
 }

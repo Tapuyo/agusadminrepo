@@ -6,8 +6,8 @@ import 'package:flutter/material.dart';
 //yellow
 //const kColorBlue = Color(0xff757575);
 
-const kColorBlue = Color(0xff1A61FF);
-const kColorDarkBlue = Color(0xff8E8E8E);
+const kColorBlue = Color.fromARGB(255, 70, 117, 217);
+const kColorDarkBlue = Color(0xffF5F5F5);
 const kColorPink = Color(0xff7676801F);
 
 const kInputTextStyle = TextStyle(
@@ -31,26 +31,54 @@ const kTextStyleButton = TextStyle(
   fontFamily: 'NunitoSans',
 );
 
-const kTextStyleSubtitle1 = TextStyle(
+const kTextStyleHeadline1 = TextStyle(
+  fontSize: 12,
+  fontWeight: FontWeight.w200,
+  fontFamily: 'NunitoSans',
+);
+
+const kTextStyleHeadline2 = TextStyle(
+  fontSize: 14,
+  fontWeight: FontWeight.w300,
+  fontFamily: 'NunitoSans',
+);
+
+const kTextStyleHeadline4 = TextStyle(
   fontSize: 16,
   fontWeight: FontWeight.w400,
   fontFamily: 'NunitoSans',
 );
 
-const kTextStyleSubtitle2 = TextStyle(
-  fontSize: 14,
-  fontWeight: FontWeight.w500,
+const kTextStyleHeadline5 = TextStyle(
+  fontSize: 20,
+  fontWeight: FontWeight.w600,
   fontFamily: 'NunitoSans',
 );
 
-const kTextStyleBody2 = TextStyle(
+const BluekTextStyleHeadline1 = TextStyle(
+  fontSize: 12,
+  fontWeight: FontWeight.w200,
+  fontFamily: 'NunitoSans',
+  color: kColorBlue
+);
+
+const BluekTextStyleHeadline2 = TextStyle(
   fontSize: 14,
+  fontWeight: FontWeight.w300,
+  fontFamily: 'NunitoSans',
+  color: kColorBlue
+);
+
+const BluekTextStyleHeadline4 = TextStyle(
+  fontSize: 16,
   fontWeight: FontWeight.w400,
   fontFamily: 'NunitoSans',
+  color: kColorBlue
 );
 
-const kTextStyleHeadline6 = TextStyle(
+const BluekTextStyleHeadline5 = TextStyle(
   fontSize: 20,
-  fontWeight: FontWeight.w500,
+  fontWeight: FontWeight.w600,
   fontFamily: 'NunitoSans',
+  color: kColorBlue
 );
