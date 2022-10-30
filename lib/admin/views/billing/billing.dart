@@ -66,6 +66,7 @@ class BillingPage extends HookWidget {
                 bills.add(bill);
               })
             });
+    print(bills.toString());
     return bills;
   }
 
@@ -116,7 +117,7 @@ class BillingPage extends HookWidget {
                                       
                                     ],
                                   ),
-                                  Text(snapshot.data[index].year, style: kTextStyleHeadline2),
+                                  Text(snapshot.data[index].year, style: kTextStyleHeadline2Dark),
                                 ],
                               )),
                         ),

@@ -136,7 +136,7 @@ class _MyHomePageState extends State<MyHomePage> {
           child: child!,
         );
       },
-      title: 'Driving Lesson Routes',
+      title: 'Agus Pilar Water Billing System',
       initialRoute: Routes.splash,
       onGenerateRoute: RouteGenerator.generateRoute,
       debugShowCheckedModeBanner: false,

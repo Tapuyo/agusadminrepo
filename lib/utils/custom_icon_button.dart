@@ -1,24 +1,24 @@
 import 'package:agus/constants/constant.dart';
 import 'package:flutter/material.dart';
 
-class MenuButton extends StatelessWidget {
+class CustomIconButton extends StatelessWidget {
   final String text;
   final VoidCallback onPressed;
   final double? elevation;
   final double? borderRadius;
   final EdgeInsets? padding;
   final double? textSize;
-  final bool isSelect;
+  final IconData icon;
 
-  const MenuButton({
+  const CustomIconButton({
     Key? key,
     required this.text,
     required this.onPressed,
-    required this.isSelect,
     this.elevation,
     this.borderRadius = 20,
     this.padding,
     this.textSize = 12,
+    required this.icon,
   }) : super(key: key);
 
   @override
@@ -28,22 +28,26 @@ class MenuButton extends StatelessWidget {
       child: GestureDetector(
         onTap: onPressed,
         child: Container(
-          height: 40,
+          height: 35,
           decoration: BoxDecoration(
-      color: isSelect ? kColorBlue:kColorDarkBlue,
+      color: kColorGreen,
    
       borderRadius: BorderRadius.circular(20),),
   
         child: Padding(
           padding: padding ??
-              const EdgeInsets.only(top: 0, bottom: 20, left: 20, right: 0),
+              const EdgeInsets.only(top: 0, bottom: 20, left: 20, right: 20),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: <Widget>[
+               SizedBox(width: 10,),
+              Icon(icon, color: kColorWhite,),
+              SizedBox(width: 4,),
               Text(
                 text,
-                style: isSelect ? kTextStyleHeadline2Ligth:kTextStyleHeadline2Dark,
+                style: kTextStyleHeadline1Light,
               ),
+               SizedBox(width: 10,),
             ],
           ),
         ),

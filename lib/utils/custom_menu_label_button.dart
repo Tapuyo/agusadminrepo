@@ -1,7 +1,7 @@
 import 'package:agus/constants/constant.dart';
 import 'package:flutter/material.dart';
 
-class MenuButton extends StatelessWidget {
+class MenuLabelButton extends StatelessWidget {
   final String text;
   final VoidCallback onPressed;
   final double? elevation;
@@ -10,7 +10,7 @@ class MenuButton extends StatelessWidget {
   final double? textSize;
   final bool isSelect;
 
-  const MenuButton({
+  const MenuLabelButton({
     Key? key,
     required this.text,
     required this.onPressed,
@@ -29,8 +29,9 @@ class MenuButton extends StatelessWidget {
         onTap: onPressed,
         child: Container(
           height: 40,
+          width: 200,
           decoration: BoxDecoration(
-      color: isSelect ? kColorBlue:kColorDarkBlue,
+      color: isSelect ? kColorBlue:Colors.transparent,
    
       borderRadius: BorderRadius.circular(20),),
   
@@ -42,7 +43,7 @@ class MenuButton extends StatelessWidget {
             children: <Widget>[
               Text(
                 text,
-                style: isSelect ? kTextStyleHeadline2Ligth:kTextStyleHeadline2Dark,
+                style: isSelect? kTextStyleHeadline2Ligth:kTextStyleHeadline2Dark,
               ),
             ],
           ),
