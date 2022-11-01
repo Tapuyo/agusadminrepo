@@ -52,6 +52,14 @@ const kTextStyleHeadline2Dark = TextStyle(
   fontFamily: 'NunitoSans',
   color: kColorDarker
 );
+
+const kTextStyleHeadlineClickable = TextStyle(
+  fontSize: 14,
+  fontWeight: FontWeight.w500,
+  fontFamily: 'NunitoSans',
+  color: kColorGreen
+);
+
 const kTextStyleHeadline2Ligth = TextStyle(
   fontSize: 14,
   fontWeight: FontWeight.w500,
@@ -71,9 +79,11 @@ const kTextStyleHeadline5 = TextStyle(
   fontFamily: 'NunitoSans'
 );
 
+
+
 const BluekTextStyleHeadline1 = TextStyle(
-  fontSize: 12,
-  fontWeight: FontWeight.w200,
+  fontSize: 24,
+  fontWeight: FontWeight.w800,
   fontFamily: 'NunitoSans',
   color: kColorBlue
 );

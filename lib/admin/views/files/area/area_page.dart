@@ -103,7 +103,6 @@ class AreaPage extends HookWidget {
                 newAreas.add(area);
               })
             });
-    debugPrint(newAreas.toString());
     return newAreas;
   }
 

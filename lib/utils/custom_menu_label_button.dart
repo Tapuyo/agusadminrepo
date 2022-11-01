@@ -28,7 +28,7 @@ class MenuLabelButton extends StatelessWidget {
       child: GestureDetector(
         onTap: onPressed,
         child: Container(
-          height: 40,
+          height: 35,
           width: 200,
           decoration: BoxDecoration(
       color: isSelect ? kColorBlue:Colors.transparent,

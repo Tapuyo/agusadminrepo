@@ -157,7 +157,7 @@ class ConnectionPage extends HookWidget {
                                     ),
                                     Expanded(
                                       flex: 2,
-                                      child: Text(snapshot.data[index].price.toString(),
+                                      child: Text('Php ${snapshot.data[index].price.toString()}',
                                           style: kTextStyleHeadline2Dark),
                                     ),
                                     Spacer(),
