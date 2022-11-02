@@ -15,18 +15,21 @@ class BillingPage extends HookWidget {
   @override
   Widget build(BuildContext context) {
     final docID = useState<String>('');
+     final mothChoose = useState<String>('');
     final yearChoose = useState<String>(DateTime.now().year.toString());
+    final openBilling = useState<bool>(false);
+    final fBilling = useState<Future?>(null); 
+
     return Expanded(
       child: Row(
         mainAxisAlignment: MainAxisAlignment.start,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          billingMenu(context, docID, yearChoose),
-          
+          billingMenu(context, docID, yearChoose, openBilling,fBilling, mothChoose),
           SizedBox(
             width: 10,
           ),
-          BillingContentPage(docID: docID.value)
+          BillingContentPage(docID: docID.value, openBilling: openBilling.value, billYear: yearChoose.value, billMonth: mothChoose.value,)
         ],
       ),
     );
@@ -46,8 +49,8 @@ class BillingPage extends HookWidget {
     return menuItems;
   }
 
-  Widget billingMenu(
-      BuildContext context, ValueNotifier docID, ValueNotifier yearChoose) {
+  Widget billingMenu(BuildContext context, ValueNotifier docID,
+      ValueNotifier yearChoose, ValueNotifier openBilling, ValueNotifier fBilling, ValueNotifier mothChoose) {
     return DecoratedBox(
       decoration: BoxDecoration(
         color: Colors.white,
@@ -66,10 +69,13 @@ class BillingPage extends HookWidget {
                   icon: Icons.add_circle,
                   key: key,
                   onPressed: () async {
-                    String? val = await showDialog<String>(
+                    await showDialog<bool>(
                       context: context,
                       builder: (context) => NewBillingDialog(),
                     );
+                    
+                    fBilling.value = getBilling(yearChoose.value);
+                    
                   },
                   text: 'Create New Billing ',
                   elevation: 0,
@@ -88,12 +94,12 @@ class BillingPage extends HookWidget {
                     value: yearChoose.value,
                     items: dropdownItemsYear,
                     onChanged: (newValue) {
-                        yearChoose.value = newValue!;
+                      yearChoose.value = newValue!;
                     },
                   ),
                 ],
               ),
-              menuDate(context, docID, yearChoose),
+              menuDate(context, docID, yearChoose, openBilling,fBilling, mothChoose),
             ],
           ),
         ),
@@ -117,14 +123,14 @@ class BillingPage extends HookWidget {
                 }
               })
             });
-    print(bills.toString());
     return bills;
   }
 
-  Widget menuDate(
-      BuildContext context, ValueNotifier docID, ValueNotifier yearChoose) {
+  Widget menuDate(BuildContext context, ValueNotifier docID,
+      ValueNotifier yearChoose, ValueNotifier openBilling,ValueNotifier fBilling, ValueNotifier mothChoose) {
+        fBilling.value = getBilling(yearChoose.value);
     return FutureBuilder(
-        future: getBilling(yearChoose.value),
+        future: fBilling.value,
         builder: (BuildContext context, AsyncSnapshot snapshot) {
           if (snapshot.connectionState == ConnectionState.done) {
             if (snapshot.data.length <= 0) {
@@ -146,6 +152,13 @@ class BillingPage extends HookWidget {
                           key: key,
                           onPressed: () {
                             docID.value = snapshot.data[index].billingID;
+                            if (snapshot.data[index].status == 'open') {
+                              openBilling.value = true;
+                            } else {
+                              openBilling.value = false;
+                            }
+                            mothChoose.value = snapshot.data[index].month;
+
                             print(docID.value);
                           },
                           text: snapshot.data[index].month,

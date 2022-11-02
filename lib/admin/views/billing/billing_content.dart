@@ -1,5 +1,6 @@
 import 'package:agus/admin/models/area_models.dart';
 import 'package:agus/admin/models/billing_members_models.dart';
+import 'package:agus/admin/views/billing/dialog/billing_pay_dialog.dart';
 import 'package:agus/admin/views/billing/dialog/flat_rate_dialog.dart';
 import 'package:agus/admin/views/billing/print/billing_print.dart';
 import 'package:agus/constants/constant.dart';
@@ -12,13 +13,26 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 
 class BillingContentPage extends HookWidget {
   final String docID;
-  const BillingContentPage({Key? key, required this.docID}) : super(key: key);
+  final bool openBilling;
+  final String billMonth;
+  final String billYear;
+  const BillingContentPage(
+      {Key? key, required this.docID, required this.openBilling,required this.billMonth,required this.billYear})
+      : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     final lock = useState<bool>(true);
     final fBilling = useState<Future?>(null);
     final billingMember = useState<List<BillingMember>>([]);
+
+    useEffect(() {
+      if (openBilling) {
+        lock.value = true;
+      } else {
+        lock.value = true;
+      }
+    }, []);
 
     return Expanded(
       child: DecoratedBox(
@@ -38,12 +52,19 @@ class BillingContentPage extends HookWidget {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       CustomIconButton(
+                          enable: openBilling,
                           icon: lock.value ? Icons.lock : Icons.lock_open,
                           key: key,
                           onPressed: () {
-                            lock.value = !lock.value;
+                            if (openBilling) {
+                              lock.value = !lock.value;
+                            }
                           },
-                          text: lock.value ? 'Unlock ' : 'lock',
+                          text: openBilling
+                              ? lock.value
+                                  ? 'Unlock '
+                                  : 'lock'
+                              : 'Unlock',
                           elevation: 0,
                           textSize: 14,
                           padding: const EdgeInsets.fromLTRB(0, 0, 0, 0)),
@@ -86,60 +107,7 @@ class BillingContentPage extends HookWidget {
                           padding: const EdgeInsets.fromLTRB(0, 0, 0, 0)),
                     ],
                   ),
-                  Column(
-                    children: [
-                      Container(
-                        color: Colors.transparent,
-                        child: GestureDetector(
-                          onTap: () {},
-                          child: Padding(
-                            padding: const EdgeInsets.fromLTRB(20, 10, 20, 10),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              // ignore: prefer_const_literals_to_create_immutables
-                              children: [
-                                Expanded(
-                                  flex: 2,
-                                  child: Text(
-                                    'Name',
-                                    style: kTextStyleHeadline4,
-                                  ),
-                                ),
-                                Expanded(
-                                  flex: 2,
-                                  child: Text('Previous ',
-                                      style: kTextStyleHeadline4),
-                                ),
-                                Expanded(
-                                  flex: 2,
-                                  child: Text('Current ',
-                                      style: kTextStyleHeadline4),
-                                ),
-                                Expanded(
-                                  flex: 2,
-                                  child: Text('Total Cubic',
-                                      style: kTextStyleHeadline4),
-                                ),
-                                Expanded(
-                                  flex: 2,
-                                  child: Text('Billing Price',
-                                      style: kTextStyleHeadline4),
-                                ),
-                                Expanded(
-                                  flex: 2,
-                                  child: Text('Status',
-                                      style: kTextStyleHeadline4),
-                                ),
-                                Spacer(),
-                                Text('Action', style: kTextStyleHeadline4),
-                              ],
-                            ),
-                          ),
-                        ),
-                      ),
-                      Divider()
-                    ],
-                  ),
+                  Divider(),
                   billMemberList(context, lock, fBilling, billingMember),
                 ],
               )),
@@ -155,9 +123,7 @@ class BillingContentPage extends HookWidget {
     }
 
     await FirebaseFirestore.instance
-        .collection('billing')
-        .doc(docID)
-        .collection('members')
+        .collection('membersBilling').where('billingId', isEqualTo: docID)
         .get()
         .then((QuerySnapshot querySnapshot) => {
               querySnapshot.docs.forEach((doc) async {
@@ -239,7 +205,7 @@ class BillingContentPage extends HookWidget {
                                       MainAxisAlignment.spaceBetween,
                                   children: [
                                     Expanded(
-                                      flex: 2,
+                                      flex: 3,
                                       child: Text(
                                         snapshot.data[index].name,
                                         style: kTextStyleHeadline2Dark,
@@ -247,16 +213,26 @@ class BillingContentPage extends HookWidget {
                                     ),
                                     Expanded(
                                       flex: 2,
-                                      child: Text(
-                                          snapshot.data[index].previousReading
-                                              .toString(),
-                                          style: kTextStyleHeadline2Dark),
+                                      child: Column(
+                                        children: [
+                                          Text('Previous Reading',
+                                              style: kTextStyleHeadline1),
+                                          SizedBox(
+                                            height: 4,
+                                          ),
+                                          Text(
+                                              snapshot
+                                                  .data[index].previousReading
+                                                  .toString(),
+                                              style: kTextStyleHeadline2Dark),
+                                        ],
+                                      ),
                                     ),
                                     Expanded(
                                       flex: 2,
                                       child: GestureDetector(
                                         onTap: () {
-                                          if (!lock.value) {
+                                          if (!lock.value && openBilling) {
                                             _updateDialog(
                                                 context,
                                                 snapshot.data[index].id,
@@ -274,10 +250,21 @@ class BillingContentPage extends HookWidget {
                                                     .data[index].connectionId);
                                           }
                                         },
-                                        child: Text(
-                                            snapshot.data[index].currentReading
-                                                .toString(),
-                                            style: kTextStyleHeadlineClickable),
+                                        child: Column(
+                                          children: [
+                                            Text('Current Reading',
+                                                style: kTextStyleHeadline1),
+                                            SizedBox(
+                                              height: 4,
+                                            ),
+                                            Text(
+                                                snapshot
+                                                    .data[index].currentReading
+                                                    .toString(),
+                                                style:
+                                                    kTextStyleHeadlineClickable),
+                                          ],
+                                        ),
                                       ),
                                     ),
 
@@ -301,16 +288,25 @@ class BillingContentPage extends HookWidget {
                                     // SizedBox(width: 10,),
                                     Expanded(
                                       flex: 2,
-                                      child: Text(
-                                          snapshot.data[index].totalCubic
-                                              .toStringAsFixed(2),
-                                          style: kTextStyleHeadline2Dark),
+                                      child: Column(
+                                        children: [
+                                          Text('Total Cubic',
+                                              style: kTextStyleHeadline1),
+                                          SizedBox(
+                                            height: 4,
+                                          ),
+                                          Text(
+                                              snapshot.data[index].totalCubic
+                                                  .toStringAsFixed(2),
+                                              style: kTextStyleHeadline2Dark),
+                                        ],
+                                      ),
                                     ),
                                     Expanded(
                                       flex: 2,
                                       child: GestureDetector(
                                         onTap: () {
-                                          if (!lock.value) {
+                                          if (!lock.value && openBilling) {
                                             _updateFlatRateDialog(
                                                 context,
                                                 snapshot.data[index].id,
@@ -322,24 +318,74 @@ class BillingContentPage extends HookWidget {
                                                 snapshot.data[index].memberId);
                                           }
                                         },
-                                        child: Text(
-                                            'Php ${snapshot.data[index].billingPrice.toStringAsFixed(2)}',
-                                            style: kTextStyleHeadlineClickable),
+                                        child: Column(
+                                          children: [
+                                            Text('Billing',
+                                                style: kTextStyleHeadline1),
+                                            SizedBox(
+                                              height: 4,
+                                            ),
+                                            Text(
+                                                'Php ${snapshot.data[index].billingPrice.toStringAsFixed(2)}',
+                                                style:
+                                                    kTextStyleHeadlineClickable),
+                                          ],
+                                        ),
                                       ),
                                     ),
-                                    Expanded(
-                                      flex: 2,
-                                      child: Text(snapshot.data[index].status,
-                                          style: kTextStyleHeadline2Dark),
-                                    ),
+
                                     Spacer(),
                                     IconButton(
                                         onPressed: () {
                                           var args = billingMember;
-                                          Navigator.of(context).restorablePush(_modalBuilder, arguments: args.value);
-
+                                          Navigator.of(context).push(
+                                              _modalBuilder(
+                                                  context,
+                                                  snapshot.data[index].id,
+                                                  snapshot.data[index].name,
+                                                  fBilling,
+                                                  snapshot.data[index].toBill,
+                                                   snapshot.data[index].flatRatePrice.toStringAsFixed(2),
+                                                   snapshot.data[index].memberId,
+                                                   snapshot.data[index].billingPrice.toStringAsFixed(2),
+                                                   snapshot.data[index].areaId,
+                                                   snapshot.data[index].connectionId
+                                                   ));
                                         },
                                         icon: Icon(Icons.menu))
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ),
+                          Container(
+                            color: Colors.transparent,
+                            child: GestureDetector(
+                              onTap: () {},
+                              child: Padding(
+                                padding:
+                                    const EdgeInsets.fromLTRB(20, 2, 20, 2),
+                                child: Row(
+                                  children: [
+                                    toReadChip(
+                                        snapshot.data[index].currentReading),
+                                    SizedBox(
+                                      width: 8,
+                                    ),
+                                    toStatusChip(snapshot.data[index].status),
+                                    SizedBox(
+                                      width: 8,
+                                    ),
+                                    toBillChip(snapshot.data[index].toBill),
+                                    SizedBox(
+                                      width: 8,
+                                    ),
+                                    if (snapshot.data[index].flatRate !=
+                                        '') ...[
+                                      toFlatRateChip(snapshot
+                                          .data[index].flatRatePrice
+                                          .toStringAsFixed(2))
+                                    ],
                                   ],
                                 ),
                               ),
@@ -363,6 +409,74 @@ class BillingContentPage extends HookWidget {
             );
           }
         });
+  }
+
+  Widget toFlatRateChip(String flatRate) {
+    return Container(
+      decoration: BoxDecoration(
+        color: Color.fromARGB(255, 32, 175, 165),
+        borderRadius: BorderRadius.circular(6),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(8, 4, 8, 4),
+        child: Center(
+            child: Text(
+          'Flat Rate Php $flatRate',
+          style: TextStyle(color: Colors.white, fontSize: 12),
+        )),
+      ),
+    );
+  }
+
+  Widget toStatusChip(String status) {
+    return Container(
+      decoration: BoxDecoration(
+        color: status != 'unpaid' ? Colors.blue : Colors.orangeAccent.shade400,
+        borderRadius: BorderRadius.circular(6),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(8, 4, 8, 4),
+        child: Center(
+            child: Text(
+          status == 'unpaid' ? 'Unpaod':'Paid',
+          style: TextStyle(color: Colors.white, fontSize: 12),
+        )),
+      ),
+    );
+  }
+
+  Widget toBillChip(bool tobill) {
+    return Container(
+      decoration: BoxDecoration(
+        color: tobill ? Colors.green : Colors.amber.shade400,
+        borderRadius: BorderRadius.circular(6),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(8, 4, 8, 4),
+        child: Center(
+            child: Text(
+          tobill ? 'Billed' : 'To Bill',
+          style: TextStyle(color: Colors.white, fontSize: 12),
+        )),
+      ),
+    );
+  }
+
+  Widget toReadChip(double currentReading) {
+    return Container(
+      decoration: BoxDecoration(
+        color: currentReading > 0 ? Colors.blueAccent : Colors.grey,
+        borderRadius: BorderRadius.circular(6),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(8, 4, 8, 4),
+        child: Center(
+            child: Text(
+          currentReading > 0 ? 'Read' : 'Unread',
+          style: TextStyle(color: Colors.white, fontSize: 12),
+        )),
+      ),
+    );
   }
 
   void _updateDialog(
@@ -431,17 +545,18 @@ class BillingContentPage extends HookWidget {
       double totalCubic,
       String flatRate,
       String connectionId) async {
-    if (currentReading.isNotEmpty && totalCubic > 0 && flatRate.isEmpty) {
+    if (currentReading.isNotEmpty && totalCubic > 0 && flatRate == '' ||
+        flatRate == '0') {
       double totalPrice = await getTotalBill(connectionId, totalCubic);
       FirebaseFirestore.instance
-          .collection('billing')
-          .doc(docID)
-          .collection('members')
+          .collection('membersBilling')
           .doc(id)
           .update({
         'currentReading': double.parse(currentReading),
         'totalCubic': totalCubic,
-        'billingPrice': totalPrice
+        'billingPrice': totalPrice,
+        'flatRatePrice': 0,
+        'flatRate': ''
       }).then((value) {
         getArea();
         fBilling.value = getArea();
@@ -554,13 +669,12 @@ class BillingContentPage extends HookWidget {
       String id, String flatRatePrice, ValueNotifier fBilling) async {
     if (flatRatePrice.isNotEmpty) {
       FirebaseFirestore.instance
-          .collection('billing')
-          .doc(docID)
-          .collection('members')
+          .collection('membersBilling')
           .doc(id)
           .update({
         'flatRatePrice': double.parse(flatRatePrice),
         'billingPrice': double.parse(flatRatePrice),
+        'flatRate': flatRatePrice
       }).then((value) {
         getArea();
         fBilling.value = getArea();
@@ -585,22 +699,51 @@ class BillingContentPage extends HookWidget {
     print(value);
   }
 
-  static Route<void> _modalBuilder(BuildContext context, Object? arguments) {
-    print(arguments.toString());
-    return CupertinoModalPopupRoute<void>(
+  _modalBuilder(BuildContext context, String memberID, String name,
+      ValueNotifier fBilling, bool toBill , String flatRatePrice, member, billingPrice, areaID, connID) {
+    return CupertinoModalPopupRoute(
       builder: (BuildContext context) {
         return CupertinoActionSheet(
-          title: const Text('Title'),
-          message: const Text('title'),
+          title: Text('Update $name bill'),
           actions: <CupertinoActionSheetAction>[
             CupertinoActionSheetAction(
-              child: const Text('Action One'),
-              onPressed: () {
+              child: Text(toBill ? 'To Bill' : 'Billed'),
+              onPressed: () async {
+                await updateBillingToBill(memberID, !toBill, fBilling);
                 Navigator.pop(context);
               },
             ),
+            if(double.parse(billingPrice) > 0)
             CupertinoActionSheetAction(
-              child: const Text('Action Two'),
+              child: const Text('Pay'),
+              onPressed: ()async {
+                Navigator.pop(context);
+                await showDialog<bool>(
+                      context: context,
+                      builder: (context) => BillingPayDialog(billingID: docID, memberID: memberID, name: name, 
+                      billingPrice: billingPrice, billYear: billYear, billMonth: billMonth,
+                      memID: member, areaID: areaID, connID: connID,),
+                    );
+              },
+            ),
+            CupertinoActionSheetAction(
+              child: const Text('Flat Rate'),
+              onPressed: () {
+                if (openBilling) {
+                  Navigator.pop(context);
+                  _updateFlatRateDialog(
+                      context,
+                      memberID,
+                      name,
+                      fBilling,
+                      flatRatePrice,
+                      member);
+                }
+                
+              },
+            ),
+            CupertinoActionSheetAction(
+              child: const Text('Member Chart'),
               onPressed: () {
                 Navigator.pop(context);
               },
@@ -608,6 +751,69 @@ class BillingContentPage extends HookWidget {
           ],
         );
       },
+    );
+  }
+
+  Future<void> updateBillingToBill(
+      String memberIdBill, bool toBillNot, ValueNotifier fBilling) async {
+    FirebaseFirestore.instance
+        .collection('membersBilling')
+        .doc(memberIdBill)
+        .update({
+      'toBill': toBillNot,
+    }).then((value) {
+      fBilling.value = getArea();
+    });
+  }
+
+
+    void payDialog(
+      BuildContext context,
+      String id,
+      String name,
+      String billingPrice) {
+    TextEditingController controllers = new TextEditingController();
+    showCupertinoModalPopup<void>(
+      barrierDismissible: false,
+      context: context,
+      builder: (BuildContext context) => CupertinoAlertDialog(
+        title: const Text('Update Reading'),
+        content: Column(
+          children: [
+            Text('Update $name current reading'),
+            SizedBox(
+              height: 8,
+            ),
+            SizedBox(
+              width: 100,
+              height: 30,
+              child: CupertinoTextField(
+                textAlign: TextAlign.center,
+                controller: controllers,
+                onChanged: (value) {
+                  controllers.text == value;
+                },
+              ),
+            ),
+          ],
+        ),
+        actions: <CupertinoDialogAction>[
+          CupertinoDialogAction(
+            isDefaultAction: true,
+            onPressed: () {
+              Navigator.pop(context);
+            },
+            child: const Text('No'),
+          ),
+          CupertinoDialogAction(
+            isDestructiveAction: true,
+            onPressed: () {
+
+            },
+            child: const Text('Yes'),
+          ),
+        ],
+      ),
     );
   }
 }

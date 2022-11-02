@@ -33,13 +33,6 @@ class _DialogTwoState extends State<FlatRateDialog> {
             const SizedBox(height: 15),
             flatRateList(context),
             Spacer(),
-            // ElevatedButton(
-            //  // Pass the value you want to return here ---------------|
-            //   onPressed: () => Navigator.pop(context, value), //<-----|
-            //   child: SizedBox(
-            //     width: 200,
-            //     child: const Text('cancel')),
-            // ),
             MenuLabelButton(
                         isSelect: false,
                         onPressed: () {

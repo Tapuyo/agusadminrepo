@@ -6,86 +6,43 @@ import 'package:flutter/material.dart';
 
 import '../../../../utils/custom_menu_button.dart';
 
-class NewBillingDialog extends StatefulWidget {
+class BillingPayDialog extends StatefulWidget {
+  final String billingID;
+  final String memberID;
+  final String name;
+  final String billingPrice;
+  final String billYear;
+  final String billMonth;
+  final String memID;
+  final String areaID;
+  final String connID;
   @override
-  _NewBillingDialog createState() => _NewBillingDialog();
+  _BillingPayDialog createState() => _BillingPayDialog();
 
-  const NewBillingDialog({
-    Key? key,
-  }) : super(key: key);
+  const BillingPayDialog(
+      {Key? key,
+      required this.billingID,
+      required this.memberID,
+      required this.name,
+      required this.billingPrice,
+      required this.billYear,
+      required this.billMonth,
+      required this.memID,
+      required this.areaID,
+      required this.connID})
+      : super(key: key);
 }
 
-class _NewBillingDialog extends State<NewBillingDialog> {
-  String value = '';
-
-  String selectedValue = "January";
-  String selectedValueYear = "2022";
-
-  List<DropdownMenuItem<String>> get dropdownItems {
-    List<DropdownMenuItem<String>> menuItems = [
-      DropdownMenuItem(value: "January", child: const Text("January")),
-      DropdownMenuItem(value: "February", child: const Text("February")),
-      DropdownMenuItem(value: "March", child: const Text("March")),
-      DropdownMenuItem(value: "April", child: const Text("April")),
-      DropdownMenuItem(value: "May", child: const Text("May")),
-      DropdownMenuItem(value: "June", child: const Text("June")),
-      DropdownMenuItem(value: "July", child: const Text("July")),
-      DropdownMenuItem(value: "August", child: const Text("August")),
-      DropdownMenuItem(value: "September", child: const Text("September")),
-      DropdownMenuItem(value: "October", child: const Text("October")),
-      DropdownMenuItem(value: "November", child: const Text("November")),
-      DropdownMenuItem(value: "December", child: const Text("December")),
-    ];
-    return menuItems;
-  }
-
-  List<DropdownMenuItem<String>> get dropdownItemsYear {
-    List<DropdownMenuItem<String>> menuItems = [
-      DropdownMenuItem(value: "2022", child: const Text("2022")),
-      DropdownMenuItem(value: "2023", child: const Text("2023")),
-      DropdownMenuItem(value: "2024", child: const Text("2024")),
-      DropdownMenuItem(value: "2025", child: const Text("2025")),
-      DropdownMenuItem(value: "2026", child: const Text("2026")),
-      DropdownMenuItem(value: "2027", child: const Text("2028")),
-      DropdownMenuItem(value: "2029", child: const Text("2029")),
-      DropdownMenuItem(value: "2030", child: const Text("2030")),
-    ];
-    return menuItems;
-  }
+class _BillingPayDialog extends State<BillingPayDialog> {
 
   @override
   void initState() {
     // TODO: implement initState
-    var mo = DateTime.now().month;
-    if (mo == 1) {
-      selectedValue = "January";
-    } else if (mo == 2) {
-      selectedValue = "February";
-    } else if (mo == 3) {
-      selectedValue = "March";
-    } else if (mo == 4) {
-      selectedValue = "April";
-    } else if (mo == 5) {
-      selectedValue = "May";
-    } else if (mo == 6) {
-      selectedValue = "June";
-    } else if (mo == 7) {
-      selectedValue = "July";
-    } else if (mo == 8) {
-      selectedValue = "August";
-    } else if (mo == 9) {
-      selectedValue = "September";
-    } else if (mo == 10) {
-      selectedValue = "October";
-    } else if (mo == 11) {
-      selectedValue = "November";
-    } else if (mo == 12) {
-      selectedValue = "December";
-    }
-    selectedValueYear = DateTime.now().year.toString();
     super.initState();
+    print(widget.memID);
+    print(widget.areaID);
+    print(widget.connID);
   }
-
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
@@ -102,86 +59,29 @@ class _NewBillingDialog extends State<NewBillingDialog> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'Piwas',
-                style: BluekTextStyleHeadline1,
+                'Bill for ${widget.billMonth} ${widget.billYear}' ,
+                style: kTextStyleHeadline2Dark,
               ),
               const SizedBox(height: 15),
-              Row(
-                children: [
-                  Expanded(
-                    flex: 1,
-                    child: DecoratedBox(
-                      decoration: BoxDecoration(
-                        color: Colors.grey.shade200,
-                        borderRadius: BorderRadius.circular(20),
+
+
+              
+              DecoratedBox(
+                 decoration: BoxDecoration(
+                  color: Colors.grey.shade400,
+                  borderRadius: BorderRadius.circular(4),
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Row(
+                    children: [
+                      Text(
+                        'Name: ${widget.name}',
+                        style: kTextStyleHeadline2Dark,
                       ),
-                      child: Padding(
-                        padding: EdgeInsets.fromLTRB(20, 2, 20, 0),
-                        child: Row(
-                          children: [
-                            Text(
-                              'Month',
-                              style: kTextStyleHeadline2Dark,
-                            ),
-                            SizedBox(
-                              width: 8,
-                            ),
-                            DropdownButton(
-                              underline: SizedBox(),
-                              style: kTextStyleHeadline2Dark,
-                              focusColor: Colors.transparent,
-                              value: selectedValue,
-                              items: dropdownItems,
-                              onChanged: (String? newValue) {
-                                setState(() {
-                                  selectedValue = newValue!;
-                                });
-                              },
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
+                    ],
                   ),
-                  SizedBox(
-                    width: 5,
-                  ),
-                  Expanded(
-                    flex: 1,
-                    child: DecoratedBox(
-                      decoration: BoxDecoration(
-                        color: Colors.grey.shade200,
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                      child: Padding(
-                        padding: EdgeInsets.fromLTRB(20, 2, 20, 0),
-                        child: Row(
-                          children: [
-                            Text(
-                              'Year',
-                              style: kTextStyleHeadline2Dark,
-                            ),
-                            SizedBox(
-                              width: 8,
-                            ),
-                            DropdownButton(
-                              underline: SizedBox(),
-                              style: kTextStyleHeadline2Dark,
-                              focusColor: Colors.transparent,
-                              value: selectedValueYear,
-                              items: dropdownItemsYear,
-                              onChanged: (String? newValue) {
-                                setState(() {
-                                  selectedValueYear = newValue!;
-                                });
-                              },
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
+                ),
               ),
               SizedBox(
                 height: 10,
@@ -266,9 +166,7 @@ class _NewBillingDialog extends State<NewBillingDialog> {
                       flex: 1,
                       child: MenuButton(
                           isSelect: true,
-                          onPressed: () async{
-                            await getTotalBill(selectedValue,selectedValueYear);
-                            // ignore: use_build_context_synchronously
+                          onPressed: () async {
                             Navigator.pop(context, true);
                           },
                           text: 'Continue',
@@ -286,7 +184,105 @@ class _NewBillingDialog extends State<NewBillingDialog> {
     );
   }
 
- 
+  Future<List<FlatRate>> getFlat() async {
+    List<FlatRate> flatRate = [];
+
+    await FirebaseFirestore.instance
+        .collection('billing')
+        .get()
+        .then((QuerySnapshot querySnapshot) => {
+              querySnapshot.docs.forEach((doc) async {
+                debugPrint(doc.id);
+                FlatRate area = FlatRate(
+                  doc.id,
+                  doc['description'],
+                  doc['price'].toString(),
+                );
+
+                flatRate.add(area);
+              })
+            });
+    return flatRate;
+  }
+
+  Widget flatRateList(BuildContext context) {
+    return FutureBuilder(
+        future: getFlat(),
+        builder: (BuildContext context, AsyncSnapshot snapshot) {
+          if (snapshot.connectionState == ConnectionState.done) {
+            if (snapshot.data.length <= 0) {
+              // ignore: avoid_unnecessary_containers
+              return Center(
+                child: Column(
+                  // ignore: prefer_const_literals_to_create_immutables
+                  children: [
+                    Icon(
+                      Icons.folder_outlined,
+                      color: kColorDarkBlue,
+                      size: 70,
+                    ),
+                    Text('No flat rate found.'),
+                  ],
+                ),
+              );
+            } else {
+              return SizedBox(
+                width: 200,
+                height: 200,
+                child: ListView.builder(
+                    //shrinkWrap: true,
+                    itemCount: snapshot.data.length,
+                    itemBuilder: (context, index) {
+                      return Column(
+                        children: [
+                          GestureDetector(
+                            onTap: () {
+                              setState(() {});
+                            },
+                            child: Card(
+                              child: Padding(
+                                padding:
+                                    const EdgeInsets.fromLTRB(20, 2, 20, 2),
+                                child: Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Expanded(
+                                      flex: 2,
+                                      child: SizedBox(
+                                        height: 40,
+                                        child: Center(
+                                          child: Text(
+                                            snapshot.data[index].price,
+                                            style: kTextStyleHeadline2Dark,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      );
+                    }),
+              );
+            }
+          } else {
+            return Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: const [
+                Center(
+                  child: Text('loading.'),
+                ),
+              ],
+            );
+          }
+        });
+  }
+
   getTotalBill(String billMonth, String billYear) async {
     String prevBillId = '';
     await FirebaseFirestore.instance
@@ -300,20 +296,27 @@ class _NewBillingDialog extends State<NewBillingDialog> {
               })
             });
 
-   await createBilling(billMonth, billYear, prevBillId);
+    await createBilling(billMonth, billYear, prevBillId);
   }
 
   Future<void> createBilling(
       String billMonth, String billYear, String prevBillId) async {
-    FirebaseFirestore.instance.collection('billing').add(
-        {'month': billMonth, 'year': billYear, 'status': 'open', 'date':DateTime.now(), 'user': 'admin'}).then((value) async{
-        await getPrevBill(value.id, prevBillId);
+    FirebaseFirestore.instance.collection('billing').add({
+      'month': billMonth,
+      'year': billYear,
+      'status': 'open',
+      'date': DateTime.now(),
+      'user': 'admin'
+    }).then((value) async {
+      await getPrevBill(value.id, prevBillId);
     });
   }
 
   Future<void> getPrevBill(String currentbillId, String prevBillId) async {
     await FirebaseFirestore.instance
-        .collection('membersBilling').where('billingId', isEqualTo: prevBillId)
+        .collection('billing')
+        .doc(prevBillId)
+        .collection('members')
         .get()
         .then((QuerySnapshot querySnapshot) => {
               querySnapshot.docs.forEach((doc) async {
@@ -347,9 +350,10 @@ class _NewBillingDialog extends State<NewBillingDialog> {
     String name,
   ) async {
     FirebaseFirestore.instance
-        .collection('membersBilling')
+        .collection('billing')
+        .doc(currentbillId)
+        .collection('members')
         .add({
-          'billingId': currentbillId,
       'totalCubic': 0,
       'toBill': false,
       'status': 'unpaid',
@@ -359,8 +363,8 @@ class _NewBillingDialog extends State<NewBillingDialog> {
       'previousReading': currentReading,
       'currentReading': 0,
       'dateRead': DateTime.now(),
-      'flatRate': '',
-      'flatRatePrice': 0,
+      'flatRate': flatRate,
+      'flatRatePrice': flatRatePrice,
       'memberId': memberId,
       'name': name,
       'areaId': areaId
@@ -373,16 +377,9 @@ class _NewBillingDialog extends State<NewBillingDialog> {
     return DateFormat(dateFormat).format(docDateTime);
   }
 
-  Future<void> closeOldBill(
-      String docID) async {
-      FirebaseFirestore.instance
-          .collection('billing')
-          .doc(docID)
-          .update({
-        'status': 'close',
-      }).then((value) {
-
-      });
-    
+  Future<void> closeOldBill(String docID) async {
+    FirebaseFirestore.instance.collection('billing').doc(docID).update({
+      'status': 'close',
+    }).then((value) {});
   }
 }

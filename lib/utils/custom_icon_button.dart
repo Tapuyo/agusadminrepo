@@ -9,6 +9,7 @@ class CustomIconButton extends StatelessWidget {
   final EdgeInsets? padding;
   final double? textSize;
   final IconData icon;
+  final bool? enable;
 
   const CustomIconButton({
     Key? key,
@@ -19,6 +20,7 @@ class CustomIconButton extends StatelessWidget {
     this.padding,
     this.textSize = 12,
     required this.icon,
+    this.enable = true,
   }) : super(key: key);
 
   @override
@@ -26,11 +28,11 @@ class CustomIconButton extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.all(8.0),
       child: GestureDetector(
-        onTap: onPressed,
+        onTap: enable == true ? onPressed:null,
         child: Container(
           height: 35,
           decoration: BoxDecoration(
-      color: kColorGreen,
+      color: enable == true ? kColorGreen:kColorDarker,
    
       borderRadius: BorderRadius.circular(20),),
   
