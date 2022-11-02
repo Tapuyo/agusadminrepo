@@ -7,7 +7,7 @@ import 'package:flutter/material.dart';
 //const kColorBlue = Color(0xff757575);
 
 const kColorBlue = Color.fromARGB(255, 70, 117, 217);
-const kColorDarkBlue = Color(0xffF5F5F5);
+const kColorDarkBlue = Color.fromARGB(255, 223, 220, 220);
 const kColorWhite = Color.fromARGB(255, 255, 253, 253);
 const kColorDarker = Color.fromARGB(243, 6, 6, 6);
 const kColorGreen = Color.fromARGB(255, 69, 219, 64);
@@ -103,8 +103,9 @@ const BluekTextStyleHeadline4 = TextStyle(
 );
 
 const BluekTextStyleHeadline5 = TextStyle(
-  fontSize: 20,
+  fontSize: 30,
   fontWeight: FontWeight.w600,
   fontFamily: 'NunitoSans',
+  fontStyle: FontStyle.italic,
   color: kColorBlue
 );

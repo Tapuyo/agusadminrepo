@@ -320,7 +320,7 @@ class BillingContentPage extends HookWidget {
                                         },
                                         child: Column(
                                           children: [
-                                            Text('Billing',
+                                            Text(snapshot.data[index].balance <= 0 ? 'Billing Amount':'Original Billing',
                                                 style: kTextStyleHeadline1),
                                             SizedBox(
                                               height: 4,
@@ -329,6 +329,18 @@ class BillingContentPage extends HookWidget {
                                                 'Php ${snapshot.data[index].billingPrice.toStringAsFixed(2)}',
                                                 style:
                                                     kTextStyleHeadlineClickable),
+                                            // if(snapshot.data[index].balance <= 0)...[
+                                            //   Text(
+                                            //     'Php ${snapshot.data[index].billingPrice.toStringAsFixed(2)}',
+                                            //     style:
+                                            //         kTextStyleHeadlineClickable),
+                                            // ]else...[
+                                            //   Text(
+                                            //     'Php ${snapshot.data[index].balance.toStringAsFixed(2)}',
+                                            //     style:
+                                            //         kTextStyleHeadlineClickable),
+                                            // ]
+                                            
                                           ],
                                         ),
                                       ),
@@ -349,7 +361,8 @@ class BillingContentPage extends HookWidget {
                                                    snapshot.data[index].memberId,
                                                    snapshot.data[index].billingPrice.toStringAsFixed(2),
                                                    snapshot.data[index].areaId,
-                                                   snapshot.data[index].connectionId
+                                                   snapshot.data[index].connectionId,
+                                                   snapshot.data[index].balance.toString()
                                                    ));
                                         },
                                         icon: Icon(Icons.menu))
@@ -386,6 +399,9 @@ class BillingContentPage extends HookWidget {
                                           .data[index].flatRatePrice
                                           .toStringAsFixed(2))
                                     ],
+                                    if(snapshot.data[index].balance > 0)...[
+                                      toBlanceChip(snapshot.data[index].balance.toStringAsFixed(2))
+                                    ]
                                   ],
                                 ),
                               ),
@@ -422,6 +438,23 @@ class BillingContentPage extends HookWidget {
         child: Center(
             child: Text(
           'Flat Rate Php $flatRate',
+          style: TextStyle(color: Colors.white, fontSize: 12),
+        )),
+      ),
+    );
+  }
+
+  Widget toBlanceChip(String balance) {
+    return Container(
+      decoration: BoxDecoration(
+        color: Color.fromARGB(255, 32, 175, 165),
+        borderRadius: BorderRadius.circular(6),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(8, 4, 8, 4),
+        child: Center(
+            child: Text(
+          'Blance Php $balance',
           style: TextStyle(color: Colors.white, fontSize: 12),
         )),
       ),
@@ -556,7 +589,8 @@ class BillingContentPage extends HookWidget {
         'totalCubic': totalCubic,
         'billingPrice': totalPrice,
         'flatRatePrice': 0,
-        'flatRate': ''
+        'flatRate': '',
+        'dateRead': DateTime.now()
       }).then((value) {
         getArea();
         fBilling.value = getArea();
@@ -700,7 +734,7 @@ class BillingContentPage extends HookWidget {
   }
 
   _modalBuilder(BuildContext context, String memberID, String name,
-      ValueNotifier fBilling, bool toBill , String flatRatePrice, member, billingPrice, areaID, connID) {
+      ValueNotifier fBilling, bool toBill , String flatRatePrice, member, billingPrice, areaID, connID,balance) {
     return CupertinoModalPopupRoute(
       builder: (BuildContext context) {
         return CupertinoActionSheet(
@@ -722,7 +756,7 @@ class BillingContentPage extends HookWidget {
                       context: context,
                       builder: (context) => BillingPayDialog(billingID: docID, memberID: memberID, name: name, 
                       billingPrice: billingPrice, billYear: billYear, billMonth: billMonth,
-                      memID: member, areaID: areaID, connID: connID,),
+                      memID: member, areaID: areaID, connID: connID, balance: balance,),
                     );
               },
             ),

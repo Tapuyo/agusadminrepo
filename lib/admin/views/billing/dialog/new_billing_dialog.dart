@@ -349,7 +349,7 @@ class _NewBillingDialog extends State<NewBillingDialog> {
     FirebaseFirestore.instance
         .collection('membersBilling')
         .add({
-          'billingId': currentbillId,
+      'billingId': currentbillId,
       'totalCubic': 0,
       'toBill': false,
       'status': 'unpaid',
@@ -363,7 +363,9 @@ class _NewBillingDialog extends State<NewBillingDialog> {
       'flatRatePrice': 0,
       'memberId': memberId,
       'name': name,
-      'areaId': areaId
+      'areaId': areaId,
+      'month': selectedValue,
+      'year': selectedValueYear
     }).then((value) {});
   }
 

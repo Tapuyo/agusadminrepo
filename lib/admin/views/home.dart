@@ -28,7 +28,12 @@ class WebHome extends HookWidget {
                     height: 80,
                     child: const ColoredBox(
                       color: kColorDarkBlue,
-                    )),
+                      child: Padding(
+                        padding: EdgeInsets.fromLTRB(50, 30, 0, 0),
+                        child: Text('PIWAS',style:BluekTextStyleHeadline5),
+                      ),
+                    )
+                ),
               ],
             ),
             Row(

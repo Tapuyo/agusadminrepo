@@ -1,4 +1,6 @@
+import 'package:agus/admin/models/billing_members_models.dart';
 import 'package:agus/admin/models/flat_rate_model.dart';
+import 'package:agus/admin/models/unsettle_bills.dart';
 import 'package:agus/constants/constant.dart';
 import 'package:intl/intl.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -16,6 +18,7 @@ class BillingPayDialog extends StatefulWidget {
   final String memID;
   final String areaID;
   final String connID;
+  final String balance;
   @override
   _BillingPayDialog createState() => _BillingPayDialog();
 
@@ -29,20 +32,38 @@ class BillingPayDialog extends StatefulWidget {
       required this.billMonth,
       required this.memID,
       required this.areaID,
-      required this.connID})
+      required this.connID,
+      required this.balance})
       : super(key: key);
 }
 
 class _BillingPayDialog extends State<BillingPayDialog> {
+  String billingIDMo = '';
+  Future? billing;
+  double change = 00;
+  double billAmount = 00;
+  double balance = 00;
+  String monthBilling = '';
+  String yearBilling = '';
+  List<UnsettledBills> billingMember = [];
+  TextEditingController paymentController = new TextEditingController();
 
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
-    print(widget.memID);
-    print(widget.areaID);
-    print(widget.connID);
+    paymentController.text = '';
+    billing = getUnsettleBilling();
+    billingIDMo = widget.memberID;
+    monthBilling = widget.billMonth;
+    yearBilling = widget.billYear;
+    if(double.parse(widget.balance) <= 0){
+      billAmount = double.parse(widget.billingPrice);
+    }else{
+      billAmount = double.parse(widget.balance);
+    }
   }
+
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
@@ -52,129 +73,208 @@ class _BillingPayDialog extends State<BillingPayDialog> {
           borderRadius: BorderRadius.circular(20),
         ),
         child: SizedBox(
-          width: 500,
-          height: 400,
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.start,
-            crossAxisAlignment: CrossAxisAlignment.start,
+          width: 600,
+          height: 600,
+          child: Stack(
             children: [
-              Text(
-                'Bill for ${widget.billMonth} ${widget.billYear}' ,
-                style: kTextStyleHeadline2Dark,
+              Column(
+                children: [
+                  Text(
+                    'Billing $monthBilling $yearBilling',
+                    style: BluekTextStyleHeadline2,
+                  ),
+                  const SizedBox(height: 15),
+                  DecoratedBox(
+                    decoration: BoxDecoration(
+                      color: Colors.grey.shade400,
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Row(
+                        children: [
+                          Text(
+                            'Name: ${widget.name}',
+                            style: kTextStyleHeadline2Dark,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Expanded(
+                        flex: 1,
+                        child: Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: Column(
+                            // ignore: prefer_const_literals_to_create_immutables
+                            children: [
+                              const Text(
+                                'Unsettled bills',
+                                style: kTextStyleHeadline2Dark,
+                              ),
+                              SizedBox(
+                                height: 10,
+                              ),
+                              unsettleBills(context)
+                            ],
+                          ),
+                        ),
+                      ),
+                      SizedBox(
+                        width: 12,
+                      ),
+                      Expanded(
+                        flex: 1,
+                        child: Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.start,
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Text(
+                                'Billing details',
+                                style: kTextStyleHeadline2Dark,
+                              ),
+                               SizedBox(
+                                height: 15,
+                              ),
+                              Text(
+                                'Billing for $monthBilling $yearBilling',
+                                style: kTextStyleHeadline2Dark,
+                              ),
+                              SizedBox(
+                                height: 15,
+                              ),
+                              Row(
+                                children: [
+                                  Text(
+                                    'Total bill',
+                                    style: kTextStyleHeadline5,
+                                  ),
+                                  SizedBox(
+                                    height: 10,
+                                  ),
+                                  Spacer(),
+                                  Text(
+                                    billAmount.toStringAsFixed(2),
+                                    style: kTextStyleHeadline5,
+                                  ),
+                                ],
+                              ),
+                              SizedBox(
+                                height: 30,
+                              ),
+                              TextField(
+                                controller: paymentController,
+                                decoration: InputDecoration(
+                                  border: OutlineInputBorder(),
+                                  labelText: 'Amount here...',
+                                ),
+                                onChanged: (value){
+                                    setState(() {
+                                      if(double.parse(value) >= billAmount){
+                                        change =   double.parse(value) - billAmount;
+                                        balance = 00;
+                                      }else{
+                                        balance =    billAmount - double.parse(value);
+                                        change = 00;
+                                      }
+                                    });
+                                },
+                              ),
+                              SizedBox(
+                                height: 15,
+                              ),
+                              Row(
+                                children: [
+                                  Text(
+                                    'Change',
+                                    style: kTextStyleHeadline5,
+                                  ),
+                                  SizedBox(
+                                    height: 10,
+                                  ),
+                                  Spacer(),
+                                  Text(
+                                    change.toStringAsFixed(2),
+                                    style: kTextStyleHeadline5,
+                                  ),
+                                ],
+                              ),
+                              SizedBox(
+                                height: 15,
+                              ),
+                              Row(
+                                children: [
+                                  Text(
+                                    'Balance',
+                                    style: kTextStyleHeadline5,
+                                  ),
+                                  SizedBox(
+                                    height: 10,
+                                  ),
+                                  Spacer(),
+                                  Text(
+                                    balance.toStringAsFixed(2),
+                                    style: kTextStyleHeadline5,
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ),
+                      )
+                    ],
+                  ),
+                  SizedBox(
+                    height: 10,
+                  ),
+                ],
               ),
-              const SizedBox(height: 15),
-
-
-              
-              DecoratedBox(
-                 decoration: BoxDecoration(
-                  color: Colors.grey.shade400,
-                  borderRadius: BorderRadius.circular(4),
-                ),
+              Align(
+                alignment: FractionalOffset.bottomCenter,
                 child: Padding(
-                  padding: const EdgeInsets.all(8.0),
+                  padding: const EdgeInsets.fromLTRB(20, 0, 20, 0),
                   child: Row(
                     children: [
-                      Text(
-                        'Name: ${widget.name}',
-                        style: kTextStyleHeadline2Dark,
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              SizedBox(
-                height: 10,
-              ),
-              DecoratedBox(
-                decoration: BoxDecoration(
-                  color: Colors.pink.shade100,
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: Padding(
-                  padding: EdgeInsets.fromLTRB(20, 20, 20, 20),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.start,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    // ignore: prefer_const_literals_to_create_immutables
-                    children: [
-                      const Text(
-                        'Note: ',
-                        style: kTextStyleHeadline2Dark,
+                      Expanded(
+                        flex: 1,
+                        child: MenuButton(
+                            isSelect: false,
+                            onPressed: () {
+                              Navigator.pop(context, true);
+                            },
+                            text: 'Cancel',
+                            elevation: 0,
+                            textSize: 14,
+                            padding: const EdgeInsets.fromLTRB(5, 0, 10, 0)),
                       ),
                       SizedBox(
-                        height: 10,
+                        width: 5,
                       ),
-                      const Text(
-                        'Creating new billing automatically current billing for the moth will automatically close  We advice to resolve previous month bill first before proceeding, it might cause an Issue to your latest billing. Other wise please continue your new billing',
-                        style: kTextStyleHeadline2Dark,
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              SizedBox(
-                height: 10,
-              ),
-              DecoratedBox(
-                decoration: BoxDecoration(
-                  color: Colors.grey.shade100,
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: Padding(
-                  padding: EdgeInsets.fromLTRB(20, 20, 20, 20),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.start,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    // ignore: prefer_const_literals_to_create_immutables
-                    children: [
-                      const Text(
-                        'You may contact us for further information, message us using our help page or contact provided below: ',
-                        style: kTextStyleHeadline1,
-                      ),
-                      SizedBox(
-                        height: 5,
-                      ),
-                      const Text(
-                        'Call us: 0938 514 3902 - 02(002-1202) \nEmail: agus@agusph.app',
-                        style: kTextStyleHeadline1,
+                      Expanded(
+                        flex: 1,
+                        child: MenuButton(
+                            isSelect: balance <= 0 ? true:false,
+                            onPressed: () async {
+                              if(balance <= 0){
+                                payNormal(billingIDMo);
+                              }else{
+                                payWithBalance(billingIDMo);
+                              }
+                              // Navigator.pop(context, true);
+                            },
+                            text: balance <= 0 ? 'Pay Now':'Pay w/ Balance',
+                            elevation: 0,
+                            textSize: 14,
+                            padding: const EdgeInsets.fromLTRB(5, 0, 10, 0)),
                       ),
                     ],
                   ),
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.fromLTRB(20, 0, 20, 0),
-                child: Row(
-                  children: [
-                    Expanded(
-                      flex: 1,
-                      child: MenuButton(
-                          isSelect: false,
-                          onPressed: () {
-                            Navigator.pop(context, true);
-                          },
-                          text: 'Cancel',
-                          elevation: 0,
-                          textSize: 14,
-                          padding: const EdgeInsets.fromLTRB(5, 0, 10, 0)),
-                    ),
-                    SizedBox(
-                      width: 5,
-                    ),
-                    Expanded(
-                      flex: 1,
-                      child: MenuButton(
-                          isSelect: true,
-                          onPressed: () async {
-                            Navigator.pop(context, true);
-                          },
-                          text: 'Continue',
-                          elevation: 0,
-                          textSize: 14,
-                          padding: const EdgeInsets.fromLTRB(5, 0, 10, 0)),
-                    ),
-                  ],
                 ),
               ),
             ],
@@ -184,30 +284,43 @@ class _BillingPayDialog extends State<BillingPayDialog> {
     );
   }
 
-  Future<List<FlatRate>> getFlat() async {
-    List<FlatRate> flatRate = [];
+  Future<List<UnsettledBills>> getUnsettleBilling() async {
+    billingMember = [];
 
     await FirebaseFirestore.instance
-        .collection('billing')
+        .collection('membersBilling')
+        .where('memberId', isEqualTo: widget.memID)
         .get()
         .then((QuerySnapshot querySnapshot) => {
               querySnapshot.docs.forEach((doc) async {
-                debugPrint(doc.id);
-                FlatRate area = FlatRate(
-                  doc.id,
-                  doc['description'],
-                  doc['price'].toString(),
-                );
+                UnsettledBills bill = UnsettledBills(
+                    doc.id,
+                    doc['memberId'].toString(),
+                    doc['name'].toString(),
+                    doc['areaId'].toString(),
+                    doc['connectionId'].toString(),
+                    doc['previousReading'],
+                    doc['currentReading'],
+                    doc['dateRead'].toString(),
+                    doc['totalCubic'],
+                    doc['billingPrice'],
+                    doc['flatRate'].toString(),
+                    doc['flatRatePrice'],
+                    doc['status'].toString(),
+                    doc['toBill'],
+                    doc['balance'],
+                    doc['month'],
+                    doc['year']);
 
-                flatRate.add(area);
+                billingMember.add(bill);
               })
             });
-    return flatRate;
+    return billingMember;
   }
 
-  Widget flatRateList(BuildContext context) {
+  Widget unsettleBills(BuildContext context) {
     return FutureBuilder(
-        future: getFlat(),
+        future: billing,
         builder: (BuildContext context, AsyncSnapshot snapshot) {
           if (snapshot.connectionState == ConnectionState.done) {
             if (snapshot.data.length <= 0) {
@@ -221,14 +334,13 @@ class _BillingPayDialog extends State<BillingPayDialog> {
                       color: kColorDarkBlue,
                       size: 70,
                     ),
-                    Text('No flat rate found.'),
+                    Text('No data found.'),
                   ],
                 ),
               );
             } else {
               return SizedBox(
-                width: 200,
-                height: 200,
+                height: 400,
                 child: ListView.builder(
                     //shrinkWrap: true,
                     itemCount: snapshot.data.length,
@@ -237,15 +349,25 @@ class _BillingPayDialog extends State<BillingPayDialog> {
                         children: [
                           GestureDetector(
                             onTap: () {
-                              setState(() {});
+                              setState(() {
+                                if(snapshot.data[index].balance > 0){
+                                  billAmount = snapshot.data[index].balance;
+                                  billingIDMo = snapshot.data[index].id;
+                                    monthBilling = snapshot.data[index].billMonth;
+                                  yearBilling = snapshot.data[index].billYear;
+                                }else{
+                                  billAmount = snapshot.data[index].billingPrice;
+                                  billingIDMo = snapshot.data[index].id;
+                                  monthBilling = snapshot.data[index].billMonth;
+                                  yearBilling = snapshot.data[index].billYear;
+                                }
+                              });
                             },
                             child: Card(
                               child: Padding(
-                                padding:
-                                    const EdgeInsets.fromLTRB(20, 2, 20, 2),
+                                padding: const EdgeInsets.fromLTRB(4, 2, 4, 2),
                                 child: Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
+                                  mainAxisAlignment: MainAxisAlignment.start,
                                   children: [
                                     Expanded(
                                       flex: 2,
@@ -253,7 +375,23 @@ class _BillingPayDialog extends State<BillingPayDialog> {
                                         height: 40,
                                         child: Center(
                                           child: Text(
-                                            snapshot.data[index].price,
+                                            snapshot.data[index].billMonth +
+                                                ' ' +
+                                                snapshot.data[index].billYear,
+                                            style: kTextStyleHeadline2Dark,
+                                          ),
+                                        
+                                        ),
+                                      ),
+                                    ),
+                                    Spacer(),
+                                    Expanded(
+                                      flex: 2,
+                                      child: SizedBox(
+                                        height: 40,
+                                        child: Center(
+                                          child: Text(snapshot.data[index].balance <= 0 ? 
+                                            'Php ${snapshot.data[index].billingPrice.toStringAsFixed(2)}':'Php ${snapshot.data[index].balance.toStringAsFixed(2)}',
                                             style: kTextStyleHeadline2Dark,
                                           ),
                                         ),
@@ -283,94 +421,10 @@ class _BillingPayDialog extends State<BillingPayDialog> {
         });
   }
 
-  getTotalBill(String billMonth, String billYear) async {
-    String prevBillId = '';
-    await FirebaseFirestore.instance
-        .collection('billing')
-        .get()
-        .then((QuerySnapshot querySnapshot) => {
-              querySnapshot.docs.forEach((doc) async {
-                if (doc['status'].toString() == 'open') {
-                  prevBillId = doc.id.toString();
-                }
-              })
-            });
+  
 
-    await createBilling(billMonth, billYear, prevBillId);
-  }
 
-  Future<void> createBilling(
-      String billMonth, String billYear, String prevBillId) async {
-    FirebaseFirestore.instance.collection('billing').add({
-      'month': billMonth,
-      'year': billYear,
-      'status': 'open',
-      'date': DateTime.now(),
-      'user': 'admin'
-    }).then((value) async {
-      await getPrevBill(value.id, prevBillId);
-    });
-  }
-
-  Future<void> getPrevBill(String currentbillId, String prevBillId) async {
-    await FirebaseFirestore.instance
-        .collection('billing')
-        .doc(prevBillId)
-        .collection('members')
-        .get()
-        .then((QuerySnapshot querySnapshot) => {
-              querySnapshot.docs.forEach((doc) async {
-                String areaId = doc['areaId'];
-                String connectionId = doc['connectionId'];
-                double currentReading = 0;
-                if (doc['currentReading'] <= 0) {
-                  currentReading = doc['previousReading'];
-                } else {
-                  currentReading = doc['currentReading'];
-                }
-                String flatRate = doc['flatRate'];
-                double flatRatePrice = doc['flatRatePrice'];
-                String memberId = doc['memberId'];
-                String name = doc['name'];
-                await copyPrevBillToLatest(currentbillId, areaId, connectionId,
-                    currentReading, flatRate, flatRatePrice, memberId, name);
-              })
-            });
-    await closeOldBill(prevBillId);
-  }
-
-  Future<void> copyPrevBillToLatest(
-    String currentbillId,
-    String areaId,
-    String connectionId,
-    double currentReading,
-    String flatRate,
-    double flatRatePrice,
-    String memberId,
-    String name,
-  ) async {
-    FirebaseFirestore.instance
-        .collection('billing')
-        .doc(currentbillId)
-        .collection('members')
-        .add({
-      'totalCubic': 0,
-      'toBill': false,
-      'status': 'unpaid',
-      'balance': 0,
-      'billingPrice': 0,
-      'connectionId': connectionId,
-      'previousReading': currentReading,
-      'currentReading': 0,
-      'dateRead': DateTime.now(),
-      'flatRate': flatRate,
-      'flatRatePrice': flatRatePrice,
-      'memberId': memberId,
-      'name': name,
-      'areaId': areaId
-    }).then((value) {});
-  }
-
+  
   getCustomFormattedDateTime(String givenDateTime, String dateFormat) {
     // dateFormat = 'MM/dd/yy';
     final DateTime docDateTime = DateTime.parse(givenDateTime);
@@ -381,5 +435,53 @@ class _BillingPayDialog extends State<BillingPayDialog> {
     FirebaseFirestore.instance.collection('billing').doc(docID).update({
       'status': 'close',
     }).then((value) {});
+  }
+
+  Future<void> payNormal(
+      String billID) async {
+      FirebaseFirestore.instance
+          .collection('membersBilling')
+          .doc(billID)
+          .update({
+        'status': 'paid',
+        'balance': 0,
+      }).then((value) {
+        addPaymentHistory(billID);
+      });
+  }
+
+  Future<void> payWithBalance(
+      String billID) async {
+      FirebaseFirestore.instance
+          .collection('membersBilling')
+          .doc(billID)
+          .update({
+        'status': 'unpaid',
+        'balance': balance
+      }).then((value) {
+        addPaymentHistory(billID);
+      });
+  }
+
+  Future<void> addPaymentHistory(
+      String billID) async {
+    FirebaseFirestore.instance.collection('membersBilling').doc(billID).collection('payment').add(
+        {
+        'bill': billAmount,
+        'amount': paymentController.text, 
+        'balance': balance, 
+        'change': change,
+         'date':DateTime.now(),
+          'user': 'admin'
+          
+      }).then((value) {
+        
+        setState(() {
+          billing = getUnsettleBilling();
+          balance = 00;
+          billAmount = 00;
+          change = 00;
+        });
+    });
   }
 }
