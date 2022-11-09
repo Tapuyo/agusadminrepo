@@ -2,7 +2,6 @@ import 'package:agus/admin/models/area_models.dart';
 import 'package:agus/admin/models/billing_members_models.dart';
 import 'package:agus/admin/views/billing/dialog/billing_pay_dialog.dart';
 import 'package:agus/admin/views/billing/dialog/flat_rate_dialog.dart';
-import 'package:agus/admin/views/billing/print/billing_print.dart';
 import 'package:agus/constants/constant.dart';
 import 'package:agus/utils/custom_icon_button.dart';
 import 'package:agus/utils/custom_search.dart';
@@ -77,13 +76,7 @@ class BillingContentPage extends HookWidget {
                           icon: Icons.print,
                           key: key,
                           onPressed: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                  builder: (context) => BillingPring(
-                                        docID: docID,
-                                      )),
-                            );
+                            
                           },
                           text: 'Print ',
                           elevation: 0,
@@ -93,13 +86,7 @@ class BillingContentPage extends HookWidget {
                           icon: Icons.note,
                           key: key,
                           onPressed: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                  builder: (context) => BillingPring(
-                                        docID: docID,
-                                      )),
-                            );
+                           
                           },
                           text: 'Print Bill',
                           elevation: 0,
