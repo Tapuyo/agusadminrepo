@@ -1,41 +1,34 @@
 {
   "project_info": {
-    "project_number": "734439168307",
-    "project_id": "agus-9b8da",
-    "storage_bucket": "agus-9b8da.appspot.com"
+    "project_number": "752901108623",
+    "project_id": "agus-86535",
+    "storage_bucket": "agus-86535.appspot.com"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:734439168307:android:29ac8331f11ebaef450646",
+        "mobilesdk_app_id": "1:752901108623:android:0b8d5cbc79fce3748c11fa",
         "android_client_info": {
           "package_name": "com.agus.agus"
         }
       },
       "oauth_client": [
         {
-          "client_id": "734439168307-762s5mt0i1mn65c4tlfqjkuiahmgvbci.apps.googleusercontent.com",
+          "client_id": "752901108623-deu88hfhglliuqh50nlhb05dn0nvjtli.apps.googleusercontent.com",
           "client_type": 3
         }
       ],
       "api_key": [
         {
-          "current_key": "AIzaSyAEpyW9HdHeTmAJ8P0Zj42k-SzEubuncEE"
+          "current_key": "AIzaSyCI4F2EfSq5YRgKWGkK6Vzs_CV7nj7SLmA"
         }
       ],
       "services": {
         "appinvite_service": {
           "other_platform_oauth_client": [
             {
-              "client_id": "734439168307-762s5mt0i1mn65c4tlfqjkuiahmgvbci.apps.googleusercontent.com",
+              "client_id": "752901108623-deu88hfhglliuqh50nlhb05dn0nvjtli.apps.googleusercontent.com",
               "client_type": 3
-            },
-            {
-              "client_id": "734439168307-0s4j5mg9mclobendqsq2nfeptok07gvl.apps.googleusercontent.com",
-              "client_type": 2,
-              "ios_info": {
-                "bundle_id": "com.john.sakloloresident"
-              }
             }
           ]
         }
