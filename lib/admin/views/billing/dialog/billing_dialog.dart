@@ -1,15 +1,16 @@
 import 'package:agus/admin/models/billing_members_models.dart';
 import 'package:agus/admin/models/flat_rate_model.dart';
 import 'package:agus/admin/models/unsettle_bills.dart';
+import 'package:agus/admin/views/billing/dialog/print_test.dart';
 import 'package:agus/constants/constant.dart';
-import 'package:agus/helpers/date_to_word.dart';
 import 'package:intl/intl.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
+import '../../../../helpers/date_to_word.dart';
 import '../../../../utils/custom_menu_button.dart';
 
-class BillingPayDialog extends StatefulWidget {
+class BillingPDialog extends StatefulWidget {
   final String billingID;
   final String memberID;
   final String name;
@@ -23,9 +24,9 @@ class BillingPayDialog extends StatefulWidget {
   final String dateBill;
   final String dueDateBalance;
   @override
-  _BillingPayDialog createState() => _BillingPayDialog();
+  _BillingPDialog createState() => _BillingPDialog();
 
-  const BillingPayDialog(
+  const BillingPDialog(
       {Key? key,
       required this.billingID,
       required this.memberID,
@@ -42,7 +43,7 @@ class BillingPayDialog extends StatefulWidget {
       : super(key: key);
 }
 
-class _BillingPayDialog extends State<BillingPayDialog> {
+class _BillingPDialog extends State<BillingPDialog> {
   String billingIDMo = '';
   double change = 00;
   double billAmount = 00;
@@ -53,10 +54,9 @@ class _BillingPayDialog extends State<BillingPayDialog> {
   String dueBalance = '';
   String balancewithpercent = '';
   DateTime dueDate = DateTime.now();
-  DateTime billDueDate = DateTime.now();
   String finalBill = '';
+  double balPercent = 0;
   double totalPercentAday = 0;
-  double billPercentAday = 0;
 
   @override
   void initState() {
@@ -69,41 +69,25 @@ class _BillingPayDialog extends State<BillingPayDialog> {
   }
 
   computeBill() {
-    dueDate =
-        DateTime.parse(widget.dueDateBalance).add(const Duration(days: 9));
-    print(dueDate);
+    dueDate = DateTime.parse(widget.dueDateBalance).add(const Duration(days: 9));
     final difference = DateTime.now().difference(dueDate).inDays;
 
+    print(difference);
+    
     dueBalance = dueDate.toString();
-    double balPercent = double.parse(widget.balance) * 0.02;
+    balPercent = double.parse(widget.balance) * 0.02;
     totalPercentAday = balPercent * (difference);
-    if (difference < 0) {
+    if(difference < 0){
       totalPercentAday = 0;
     }
 
     balancewithpercent =
         (totalPercentAday + double.parse(widget.balance)).toStringAsFixed(2);
+    finalBill =
+        (double.parse(balancewithpercent) + double.parse(widget.billingPrice))
+            .toStringAsFixed(2);
 
-    
 
-    billDueDate = DateTime.parse(widget.dateBill).add(const Duration(days: 9));
-    final finalBillDiff = DateTime.now().difference(billDueDate).inDays;
-
-    print(finalBillDiff);
-    double tmpBill =
-          (double.parse(balancewithpercent) + double.parse(widget.billingPrice));
-    if (finalBillDiff <= 0) {
-      finalBill =
-          (double.parse(balancewithpercent) + double.parse(widget.billingPrice))
-              .toStringAsFixed(2);
-    } else {
-      double billPercent = tmpBill * 0.02;
-      billPercentAday = billPercent * (finalBillDiff);
-      finalBill = 
-        (tmpBill +
-              billPercentAday)
-          .toStringAsFixed(2);
-    }
   }
 
   @override
@@ -116,7 +100,7 @@ class _BillingPayDialog extends State<BillingPayDialog> {
         ),
         child: SizedBox(
           width: 600,
-          height: 600,
+          height: 400,
           child: Stack(
             children: [
               Column(
@@ -176,7 +160,7 @@ class _BillingPayDialog extends State<BillingPayDialog> {
                               ),
                               const Spacer(),
                               Text(
-                                '₱ ${widget.billingPrice}',
+                                "₱ ${widget.billingPrice}",
                                 style: kTextStyleHeadline5,
                               ),
                             ],
@@ -205,8 +189,8 @@ class _BillingPayDialog extends State<BillingPayDialog> {
                           ),
                           Row(
                             children: [
-                              Text(
-                                'Due Date Balance:  ${stringDateToWord(widget.dueDateBalance.toString())}',
+                              const Text(
+                                'Due Date Balance:',
                                 style: kTextStyleHeadline2Dark,
                               ),
                               const SizedBox(
@@ -214,7 +198,9 @@ class _BillingPayDialog extends State<BillingPayDialog> {
                               ),
                               const Spacer(),
                               Text(
-                                '₱ ${totalPercentAday.toStringAsFixed(2)}',
+                                '${stringDateToWord(DateFormat('yyyy-MM-dd')
+                                    .format(dueDate)
+                                    .toString())}  ₱ ${totalPercentAday.toStringAsFixed(2)}',
                                 style: kTextStyleHeadline2Dark,
                               ),
                             ],
@@ -233,100 +219,26 @@ class _BillingPayDialog extends State<BillingPayDialog> {
                               ),
                               const Spacer(),
                               Text(
-                                finalBill,
+                                '₱ ${finalBill}',
                                 style: kTextStyleHeadline5,
                               ),
                             ],
                           ),
                           const SizedBox(
-                            height: 15,
+                            height: 50,
                           ),
-                          Row(
-                            children: [
-                              Text(
-                                'Bill Due Date:  ${stringDateToWord(widget.dateBill.toString())} ',
-                                style: kTextStyleHeadline2Dark,
-                              ),
-                              const SizedBox(
-                                height: 10,
-                              ),
-                              const Spacer(),
-                              Text(
-                                '₱ ${billPercentAday.toStringAsFixed(2)}',
-                                style: kTextStyleHeadline2Dark,
-                              ),
-                            ],
-                          ),
-                          const SizedBox(
-                            height: 70,
-                          ),
-                          TextField(
-                            textAlign: TextAlign.end,
-                            controller: paymentController,
-                            decoration: const InputDecoration(
-                              border: OutlineInputBorder(),
-                              labelText: 'Amount here...',
-                            ),
-                            onChanged: (value) {
-                              setState(() {
-                                if (double.parse(value) >=
-                                    double.parse(finalBill)) {
-                                  change = double.parse(value) -
-                                      double.parse(finalBill);
-                                  balance = 00;
-                                } else {
-                                  balance = double.parse(finalBill) -
-                                      double.parse(value);
-                                  change = 00;
-                                }
-                              });
-                            },
-                          ),
-                          const SizedBox(
-                            height: 15,
-                          ),
-                          Row(
-                            children: [
-                              const Text(
-                                'Change',
-                                style: kTextStyleHeadline5,
-                              ),
-                              const SizedBox(
-                                height: 10,
-                              ),
-                              const Spacer(),
-                              Text(
-                                '₱ ${change.toStringAsFixed(2)}',
-                                style: kTextStyleHeadline5,
-                              ),
-                            ],
-                          ),
-                          const SizedBox(
-                            height: 15,
-                          ),
-                          Row(
-                            children: [
-                              const Text(
-                                'Balance',
-                                style: kTextStyleHeadline5,
-                              ),
-                              const SizedBox(
-                                height: 10,
-                              ),
-                              const Spacer(),
-                              Text(
-                                '₱ ${balance.toStringAsFixed(2)}',
-                                style: kTextStyleHeadline5,
-                              ),
-                            ],
-                          ),
+                           Text(
+                        'Please pay bill on or before due date: ${stringDateToWord(DateTime.now().toString())}',
+                        style: kTextStyleHeadline1,
+                      ),
                         ],
                       ),
                     ),
                   ),
-                  SizedBox(
-                    height: 10,
+                  const SizedBox(
+                    height: 20,
                   ),
+                 
                 ],
               ),
               Align(
@@ -347,22 +259,22 @@ class _BillingPayDialog extends State<BillingPayDialog> {
                             textSize: 14,
                             padding: const EdgeInsets.fromLTRB(5, 0, 10, 0)),
                       ),
-                      SizedBox(
+                      const SizedBox(
                         width: 5,
                       ),
                       Expanded(
                         flex: 1,
                         child: MenuButton(
-                            isSelect: balance <= 0 ? true : false,
+                            isSelect: true,
                             onPressed: () async {
-                              if (balance <= 0) {
-                                payNormal(billingIDMo);
-                              } else {
-                                payWithBalance(billingIDMo);
-                              }
-                              Navigator.pop(context, true);
+                              await updateBillingToBill(widget.memberID);
+                              // await showDialog<bool>(
+                              //   context: context,
+                              //   builder: (context) => PrintTest(),
+                              // );
+                              Navigator.of(context).pop();
                             },
-                            text: balance <= 0 ? 'Pay Now' : 'Pay w/ Balance',
+                            text: 'Bill Now',
                             elevation: 0,
                             textSize: 14,
                             padding: const EdgeInsets.fromLTRB(5, 0, 10, 0)),
@@ -376,6 +288,14 @@ class _BillingPayDialog extends State<BillingPayDialog> {
         ),
       ),
     );
+  }
+
+ 
+  Future<void> updateBillingToBill(String memberIdBill) async {
+    FirebaseFirestore.instance
+        .collection('membersBilling')
+        .doc(memberIdBill)
+        .update({'toBill': true, 'dateBill': DateTime.now(),'totalBill': double.parse(finalBill),'balancePercent':balancewithpercent}).then((value) {});
   }
 
   getCustomFormattedDateTime(String givenDateTime, String dateFormat) {
@@ -394,20 +314,16 @@ class _BillingPayDialog extends State<BillingPayDialog> {
     FirebaseFirestore.instance.collection('membersBilling').doc(billID).update({
       'status': 'paid',
       'balance': 0,
-      'billingPrice': 0,
-      'origBill': double.parse(widget.billingPrice)
     }).then((value) {
       addPaymentHistory(billID);
     });
   }
 
   Future<void> payWithBalance(String billID) async {
-    FirebaseFirestore.instance.collection('membersBilling').doc(billID).update({
-      'status': 'unpaid',
-      'balance': balance,
-      'billingPrice': 0,
-      'origBill': double.parse(widget.billingPrice)
-    }).then((value) {
+    FirebaseFirestore.instance
+        .collection('membersBilling')
+        .doc(billID)
+        .update({'status': 'unpaid', 'balance': balance}).then((value) {
       addPaymentHistory(billID);
     });
   }
@@ -418,12 +334,13 @@ class _BillingPayDialog extends State<BillingPayDialog> {
         .doc(billID)
         .collection('payment')
         .add({
-      'bill': billAmount,
+      'bill': finalBill,
       'amount': paymentController.text,
       'balance': balance,
       'change': change,
       'date': DateTime.now(),
-      'user': 'admin'
+      'user': 'admin',
+
     }).then((value) {
       setState(() {
         balance = 00;

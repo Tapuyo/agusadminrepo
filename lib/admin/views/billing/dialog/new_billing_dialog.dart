@@ -329,8 +329,10 @@ class _NewBillingDialog extends State<NewBillingDialog> {
                 double flatRatePrice = doc['flatRatePrice'];
                 String memberId = doc['memberId'];
                 String name = doc['name'];
+                double totalBalance = doc['balance'];
+                DateTime dueBalance = (doc['dateBill'] as Timestamp).toDate();
                 await copyPrevBillToLatest(currentbillId, areaId, connectionId,
-                    currentReading, flatRate, flatRatePrice, memberId, name);
+                    currentReading, flatRate, flatRatePrice, memberId, name,dueBalance,totalBalance);
               })
             });
     await closeOldBill(prevBillId);
@@ -345,7 +347,11 @@ class _NewBillingDialog extends State<NewBillingDialog> {
     double flatRatePrice,
     String memberId,
     String name,
+    DateTime dueDateBalance,
+    double totalBalance
   ) async {
+
+    
     FirebaseFirestore.instance
         .collection('membersBilling')
         .add({
@@ -353,7 +359,7 @@ class _NewBillingDialog extends State<NewBillingDialog> {
       'totalCubic': 0,
       'toBill': false,
       'status': 'unpaid',
-      'balance': 0,
+      'balance': totalBalance,
       'billingPrice': 0,
       'connectionId': connectionId,
       'previousReading': currentReading,
@@ -365,7 +371,9 @@ class _NewBillingDialog extends State<NewBillingDialog> {
       'name': name,
       'areaId': areaId,
       'month': selectedValue,
-      'year': selectedValueYear
+      'year': selectedValueYear,
+      'dueDateBalance': dueDateBalance,
+      'dateBill': DateTime.now(),
     }).then((value) {});
   }
 

@@ -10,6 +10,8 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 
+import 'dialog/billing_dialog.dart';
+
 class BillingContentPage extends HookWidget {
   final String docID;
   final bool openBilling;
@@ -114,6 +116,8 @@ class BillingContentPage extends HookWidget {
         .get()
         .then((QuerySnapshot querySnapshot) => {
               querySnapshot.docs.forEach((doc) async {
+                DateTime dateBill = (doc['dateBill'] as Timestamp).toDate();
+                DateTime dueBalance = (doc['dueDateBalance']  as Timestamp).toDate();
                 BillingMember bill = BillingMember(
                   doc.id,
                   doc['memberId'].toString(),
@@ -130,6 +134,8 @@ class BillingContentPage extends HookWidget {
                   doc['status'].toString(),
                   doc['toBill'],
                   doc['balance'],
+                  dateBill.toString(),
+                  dueBalance.toString()
                 );
 
                 billingMember.add(bill);
@@ -137,6 +143,8 @@ class BillingContentPage extends HookWidget {
             });
     return billingMember;
   }
+
+
 
   Widget billMemberList(BuildContext context, ValueNotifier lock,
       ValueNotifier fBilling, ValueNotifier billingMember) {
@@ -155,12 +163,12 @@ class BillingContentPage extends HookWidget {
                 child: Column(
                   // ignore: prefer_const_literals_to_create_immutables
                   children: [
-                    Icon(
+                    const Icon(
                       Icons.folder_outlined,
                       color: kColorDarkBlue,
                       size: 70,
                     ),
-                    Text('No area found.'),
+                    const Text('No area found.'),
                   ],
                 ),
               );
@@ -202,9 +210,9 @@ class BillingContentPage extends HookWidget {
                                       flex: 2,
                                       child: Column(
                                         children: [
-                                          Text('Previous Reading',
+                                          const Text('Previous Reading',
                                               style: kTextStyleHeadline1),
-                                          SizedBox(
+                                          const SizedBox(
                                             height: 4,
                                           ),
                                           Text(
@@ -239,9 +247,9 @@ class BillingContentPage extends HookWidget {
                                         },
                                         child: Column(
                                           children: [
-                                            Text('Current Reading',
+                                            const Text('Current Reading',
                                                 style: kTextStyleHeadline1),
-                                            SizedBox(
+                                            const SizedBox(
                                               height: 4,
                                             ),
                                             Text(
@@ -313,7 +321,7 @@ class BillingContentPage extends HookWidget {
                                               height: 4,
                                             ),
                                             Text(
-                                                'Php ${snapshot.data[index].billingPrice.toStringAsFixed(2)}',
+                                                '₱ ${snapshot.data[index].billingPrice.toStringAsFixed(2)}',
                                                 style:
                                                     kTextStyleHeadlineClickable),
                                             // if(snapshot.data[index].balance <= 0)...[
@@ -349,7 +357,9 @@ class BillingContentPage extends HookWidget {
                                                    snapshot.data[index].billingPrice.toStringAsFixed(2),
                                                    snapshot.data[index].areaId,
                                                    snapshot.data[index].connectionId,
-                                                   snapshot.data[index].balance.toString()
+                                                   snapshot.data[index].balance.toString(),
+                                                   snapshot.data[index].dateBill.toString(),
+                                                   snapshot.data[index].dueDateBalance.toString()
                                                    ));
                                         },
                                         icon: Icon(Icons.menu))
@@ -369,15 +379,15 @@ class BillingContentPage extends HookWidget {
                                   children: [
                                     toReadChip(
                                         snapshot.data[index].currentReading),
-                                    SizedBox(
+                                    const SizedBox(
                                       width: 8,
                                     ),
                                     toStatusChip(snapshot.data[index].status),
-                                    SizedBox(
+                                    const SizedBox(
                                       width: 8,
                                     ),
                                     toBillChip(snapshot.data[index].toBill),
-                                    SizedBox(
+                                    const SizedBox(
                                       width: 8,
                                     ),
                                     if (snapshot.data[index].flatRate !=
@@ -386,6 +396,9 @@ class BillingContentPage extends HookWidget {
                                           .data[index].flatRatePrice
                                           .toStringAsFixed(2))
                                     ],
+                                    const SizedBox(
+                                      width: 8,
+                                    ),
                                     if(snapshot.data[index].balance > 0)...[
                                       toBlanceChip(snapshot.data[index].balance.toStringAsFixed(2))
                                     ]
@@ -476,7 +489,7 @@ class BillingContentPage extends HookWidget {
         child: Center(
             child: Text(
           tobill ? 'Billed' : 'To Bill',
-          style: TextStyle(color: Colors.white, fontSize: 12),
+          style: const TextStyle(color: Colors.white, fontSize: 12),
         )),
       ),
     );
@@ -721,30 +734,46 @@ class BillingContentPage extends HookWidget {
   }
 
   _modalBuilder(BuildContext context, String memberID, String name,
-      ValueNotifier fBilling, bool toBill , String flatRatePrice, member, billingPrice, areaID, connID,balance) {
+      ValueNotifier fBilling, bool toBill , String flatRatePrice, member, billingPrice, areaID, connID,balance,dateBill,dueDateBalance) {
     return CupertinoModalPopupRoute(
       builder: (BuildContext context) {
         return CupertinoActionSheet(
           title: Text('Update $name bill'),
           actions: <CupertinoActionSheetAction>[
             CupertinoActionSheetAction(
-              child: Text(toBill ? 'To Bill' : 'Billed'),
+              child: Text(toBill ? 'To Bill' : 'Bill Now'),
               onPressed: () async {
-                await updateBillingToBill(memberID, !toBill, fBilling);
+                 if (openBilling) {
+                  
+                  if(!toBill){
+                    await showDialog<bool>(
+                      context: context,
+                      builder: (context) => BillingPDialog(billingID: docID, memberID: memberID, name: name, 
+                      billingPrice: billingPrice, billYear: billYear, billMonth: billMonth,
+                      memID: member, areaID: areaID, connID: connID, balance: balance, dateBill: dateBill,dueDateBalance: dueDateBalance),
+                    );
+
+                  }else{
+                    updateBillingToBill(memberID, fBilling);
+                  }
+                 }
+                 fBilling.value = getArea();
                 Navigator.pop(context);
               },
             ),
-            if(double.parse(billingPrice) > 0)
+            if(double.parse(billingPrice) > 0 && toBill)
             CupertinoActionSheetAction(
               child: const Text('Pay'),
               onPressed: ()async {
                 Navigator.pop(context);
+                 if (openBilling) {
                 await showDialog<bool>(
                       context: context,
                       builder: (context) => BillingPayDialog(billingID: docID, memberID: memberID, name: name, 
                       billingPrice: billingPrice, billYear: billYear, billMonth: billMonth,
-                      memID: member, areaID: areaID, connID: connID, balance: balance,),
+                      memID: member, areaID: areaID, connID: connID, balance: balance, dateBill: dateBill,dueDateBalance: dueDateBalance),
                     );
+                 }
               },
             ),
             CupertinoActionSheetAction(
@@ -776,12 +805,13 @@ class BillingContentPage extends HookWidget {
   }
 
   Future<void> updateBillingToBill(
-      String memberIdBill, bool toBillNot, ValueNotifier fBilling) async {
+      String memberIdBill, ValueNotifier fBilling) async {
     FirebaseFirestore.instance
         .collection('membersBilling')
         .doc(memberIdBill)
         .update({
-      'toBill': toBillNot,
+      'toBill': false,
+      'dateBill': DateTime.now()
     }).then((value) {
       fBilling.value = getArea();
     });

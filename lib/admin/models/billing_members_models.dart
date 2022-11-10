@@ -14,9 +14,11 @@ class BillingMember{
   final String status;
   final bool toBill;
   final double balance;
+  final String dateBill;
+  final String dueDateBalance;
 
 
   BillingMember(this.id, this.memberId, this.name, this.areaId,
   this.connectionId, this.previousReading, this.currentReading, this.dateRead,this.totalCubic, this.billingPrice, this.flatRate,
-  this.flatRatePrice, this.status, this.toBill, this.balance);
+  this.flatRatePrice, this.status, this.toBill, this.balance,this.dateBill,this.dueDateBalance);
 }
