@@ -3,6 +3,7 @@ import 'dart:html';
 import 'package:agus/admin/views/billing/billing.dart';
 import 'package:agus/admin/views/files/files.dart';
 import 'package:agus/admin/views/home/home_page.dart';
+import 'package:agus/admin/views/report/report.dart';
 import 'package:agus/constants/constant.dart';
 import 'package:agus/utils/custom_menu_button.dart';
 import 'package:flutter/material.dart';
@@ -16,7 +17,7 @@ class WebHome extends HookWidget {
     final ismenuCollapse = useState<bool>(true);
     final indexMenu = useState<int>(0);
     return Scaffold(
-      backgroundColor: kColorDarkBlue,
+      backgroundColor: Color.fromARGB(255, 207, 229, 240),
       body: Column(
           mainAxisAlignment: MainAxisAlignment.start,
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -25,11 +26,11 @@ class WebHome extends HookWidget {
               children: [
                 SizedBox(
                     width: MediaQuery.of(context).size.width,
-                    height: 80,
+                    height: 60,
                     child: const ColoredBox(
-                      color: kColorDarkBlue,
+                      color: Color.fromARGB(255, 207, 229, 240),
                       child: Padding(
-                        padding: EdgeInsets.fromLTRB(50, 30, 0, 0),
+                        padding: EdgeInsets.fromLTRB(50, 20, 0, 10),
                         child: Text('PIWAS',style:BluekTextStyleHeadline5),
                       ),
                     )
@@ -51,15 +52,15 @@ class WebHome extends HookWidget {
   Widget menuWidget(BuildContext context, ValueNotifier ismenuCollapse,
       ValueNotifier indexMenu) {
     return SizedBox(
-      width: ismenuCollapse.value ? 250 : 50,
-      height: MediaQuery.of(context).size.height - 80,
+      width: ismenuCollapse.value ? 200 : 50,
+      height: MediaQuery.of(context).size.height - 60,
       child: ColoredBox(
-        color: kColorDarkBlue,
+        color: Color.fromARGB(255, 207, 229, 240),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.start,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            
+            const SizedBox(height: 30,),
             AnimatedSwitcher(
               duration: const Duration(milliseconds: 500),
               transitionBuilder: (Widget child, Animation<double> animation) {
@@ -67,7 +68,7 @@ class WebHome extends HookWidget {
               },
               child: ismenuCollapse.value
                   ? Padding(
-                    padding: const EdgeInsets.fromLTRB(20, 0, 20, 0),
+                    padding: const EdgeInsets.fromLTRB(10, 0, 10, 0),
                     child: Column(
                         mainAxisAlignment: MainAxisAlignment.start,
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -189,10 +190,20 @@ class WebHome extends HookWidget {
         {
           return  BillingPage();
         }
+      
+      case 2:
+        {
+          return  const FilesPage();
+        }
+      
+      case 3:
+        {
+          return  ReportPage();
+        }
 
       default:
         {
-          return const FilesPage();
+          return const HomePage();
         }
     }
   }

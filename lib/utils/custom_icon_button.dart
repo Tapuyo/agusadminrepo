@@ -10,6 +10,8 @@ class CustomIconButton extends StatelessWidget {
   final double? textSize;
   final IconData icon;
   final bool? enable;
+  final Color? enableColor;
+  final Color? disableColor;
 
   const CustomIconButton({
     Key? key,
@@ -21,6 +23,8 @@ class CustomIconButton extends StatelessWidget {
     this.textSize = 12,
     required this.icon,
     this.enable = true,
+    this.enableColor = kColorGreen,
+    this.disableColor = kColorDarker,
   }) : super(key: key);
 
   @override
@@ -32,7 +36,7 @@ class CustomIconButton extends StatelessWidget {
         child: Container(
           height: 35,
           decoration: BoxDecoration(
-      color: enable == true ? kColorGreen:kColorDarker,
+      color: enable == true ? enableColor:disableColor,
    
       borderRadius: BorderRadius.circular(20),),
   

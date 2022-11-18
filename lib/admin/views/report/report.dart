@@ -1,6 +1,7 @@
 import 'package:agus/admin/models/billing_models.dart';
 import 'package:agus/admin/views/billing/billing_content.dart';
 import 'package:agus/admin/views/billing/dialog/new_billing_dialog.dart';
+import 'package:agus/admin/views/report/report_content.dart';
 import 'package:agus/constants/constant.dart';
 import 'package:agus/utils/custom_menu_label_button.dart';
 import 'package:flutter/material.dart';
@@ -11,7 +12,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 
 import '../../../utils/custom_icon_button.dart';
 
-class BillingPage extends HookWidget {
+class ReportPage extends HookWidget {
   @override
   Widget build(BuildContext context) {
     final docID = useState<String>('');
@@ -26,25 +27,25 @@ class BillingPage extends HookWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           billingMenu(context, docID, yearChoose, openBilling,fBilling, mothChoose),
-          SizedBox(
+          const SizedBox(
             width: 10,
           ),
-          BillingContentPage(docID: docID.value, openBilling: openBilling.value, billYear: yearChoose.value, billMonth: mothChoose.value,)
+          ReportContentPage(docID: docID.value, openBilling: openBilling.value, billYear: yearChoose.value, billMonth: mothChoose.value,)
         ],
       ),
     );
   }
 
   List<DropdownMenuItem<String>> get dropdownItemsYear {
-    List<DropdownMenuItem<String>> menuItems = [
-      DropdownMenuItem(value: "2022", child: const Text("2022")),
-      DropdownMenuItem(value: "2023", child: const Text("2023")),
-      DropdownMenuItem(value: "2024", child: const Text("2024")),
-      DropdownMenuItem(value: "2025", child: const Text("2025")),
-      DropdownMenuItem(value: "2026", child: const Text("2026")),
-      DropdownMenuItem(value: "2027", child: const Text("2028")),
-      DropdownMenuItem(value: "2029", child: const Text("2029")),
-      DropdownMenuItem(value: "2030", child: const Text("2030")),
+    List<DropdownMenuItem<String>> menuItems = const [
+      DropdownMenuItem(value: "2022", child:  Text("2022")),
+      DropdownMenuItem(value: "2023", child:  Text("2023")),
+      DropdownMenuItem(value: "2024", child:  Text("2024")),
+      DropdownMenuItem(value: "2025", child:  Text("2025")),
+      DropdownMenuItem(value: "2026", child:  Text("2026")),
+      DropdownMenuItem(value: "2027", child:  Text("2028")),
+      DropdownMenuItem(value: "2029", child:  Text("2029")),
+      DropdownMenuItem(value: "2030", child:  Text("2030")),
     ];
     return menuItems;
   }
@@ -65,25 +66,7 @@ class BillingPage extends HookWidget {
             mainAxisAlignment: MainAxisAlignment.start,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              CustomIconButton(
-                  icon: Icons.add_circle,
-                  key: key,
-                  onPressed: () async {
-                    await showDialog<bool>(
-                      context: context,
-                      builder: (context) => NewBillingDialog(),
-                    );
-                    
-                    fBilling.value = getBilling(yearChoose.value);
-                    
-                  },
-                  text: 'Create New Billing ',
-                  elevation: 0,
-                  textSize: 16,
-                  padding: const EdgeInsets.fromLTRB(0, 0, 0, 0)),
-              SizedBox(
-                height: 10,
-              ),
+              
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [

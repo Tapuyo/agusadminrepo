@@ -32,7 +32,7 @@ class MenuButton extends StatelessWidget {
           decoration: BoxDecoration(
       color: isSelect ? kColorBlue:kColorDarkBlue,
    
-      borderRadius: BorderRadius.circular(20),),
+      borderRadius: BorderRadius.circular(8),),
   
         child: Padding(
           padding: padding ??

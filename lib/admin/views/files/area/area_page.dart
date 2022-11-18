@@ -1,4 +1,5 @@
 import 'package:agus/admin/models/area_models.dart';
+import 'package:agus/admin/views/files/area/dialog/new_area_dialog.dart';
 import 'package:agus/constants/constant.dart';
 import 'package:agus/utils/custom_icon_button.dart';
 import 'package:agus/utils/custom_search.dart';
@@ -12,6 +13,15 @@ class AreaPage extends HookWidget {
 
   @override
   Widget build(BuildContext context) {
+    final refresh = useState<bool>(false);
+    final areaList = useState<List<Area>>([]);
+
+     useEffect(() {
+      Future.microtask(() async {
+        await getArea(areaList);
+      });
+    },  [refresh.value]);
+
     return Expanded(
         child: Padding(
             padding: EdgeInsets.fromLTRB(20, 0, 20, 0),
@@ -25,14 +35,21 @@ class AreaPage extends HookWidget {
                     CustomIconButton(
                         icon: Icons.add_circle,
                         key: key,
-                        onPressed: () {},
+                        onPressed: ()async {
+                           final res = await showDialog<bool>(
+                              context: context,
+                              builder: (context) => const NewAreaDialog(),
+                            );
+                            refresh.value = !refresh.value;
+                        },
                         text: 'New Area ',
                         elevation: 0,
                         textSize: 14,
                         padding: const EdgeInsets.fromLTRB(0, 0, 0, 0)),
-                    Spacer(),
+                    
                     CustomSearch(onChanged: (value) {
                     },text: 'Seach area',),
+                    Spacer(),
                     IconButton(onPressed: (){}, icon: Icon(Icons.sort,color: kColorDarker.withOpacity(.5),))
                   ],
                 ),
@@ -76,13 +93,13 @@ class AreaPage extends HookWidget {
                           Divider()
                         ],
                       ),
-                areaList(context),
+                widgetAreaList(context,areaList),
               ],
             )));
   }
 
 
-  Future<List<Area>> getArea() async {
+   getArea(ValueNotifier areaList) async {
     List<Area> newAreas = [];
 
     await FirebaseFirestore.instance
@@ -103,34 +120,13 @@ class AreaPage extends HookWidget {
                 newAreas.add(area);
               })
             });
-    return newAreas;
+    areaList.value = newAreas;
   }
 
-  Widget areaList(BuildContext context) {
-    return FutureBuilder(
-        future: getArea(),
-        builder: (BuildContext context, AsyncSnapshot snapshot) {
-          if (snapshot.connectionState == ConnectionState.done) {
-            if (snapshot.data.length <= 0) {
-              // ignore: avoid_unnecessary_containers
-              return Center(
-                child: Column(
-                  // ignore: prefer_const_literals_to_create_immutables
-                  children: [
-                    Icon(
-                      Icons.folder_outlined,
-                      color: kColorDarkBlue,
-                      size: 70,
-                    ),
-                    Text('No area found.'),
-                  ],
-                ),
-              );
-            } else {
-              return Expanded(
-                child: ListView.builder(
-                    //shrinkWrap: true,
-                    itemCount: snapshot.data.length,
+  Widget widgetAreaList(BuildContext context,ValueNotifier arealist) {
+    return Expanded(
+                child: arealist.value.isNotEmpty ? ListView.builder(
+                    itemCount: arealist.value.length,
                     itemBuilder: (context, index) {
                       return Column(
                         children: [
@@ -146,18 +142,18 @@ class AreaPage extends HookWidget {
                                     Expanded(
                                       flex: 2,
                                       child: Text(
-                                            snapshot.data[index].name,
+                                            arealist.value[index].name,
                                             style: kTextStyleHeadline2Dark,
                                           ),
                                     ),
                                     Expanded(
                                       flex: 2,
-                                      child: Text(snapshot.data[index].code,
+                                      child: Text(arealist.value[index].code,
                                           style: kTextStyleHeadline2Dark),
                                     ),
                                     Expanded(
                                       flex: 2,
-                                      child: Text(snapshot.data[index].description,
+                                      child: Text(arealist.value[index].description,
                                           style: kTextStyleHeadline2Dark),
                                     ),
                                     Spacer(),
@@ -170,20 +166,7 @@ class AreaPage extends HookWidget {
                           Divider()
                         ],
                       );
-                    }),
+                    }):const Center(child: Text('no data founf')),
               );
-            }
-          } else {
-            return Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: const [
-                 Center(
-                child: Text('loading.'),
-              ),
-              ],
-            );
-          }
-        });
   }
 }

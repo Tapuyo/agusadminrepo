@@ -1,5 +1,6 @@
 import 'package:agus/admin/models/area_models.dart';
 import 'package:agus/admin/models/member_model.dart';
+import 'package:agus/admin/views/files/member/dialog/new_member_dialog.dart';
 import 'package:agus/constants/constant.dart';
 import 'package:agus/utils/custom_icon_button.dart';
 import 'package:agus/utils/custom_search.dart';
@@ -13,6 +14,16 @@ class MemberPage extends HookWidget {
 
   @override
   Widget build(BuildContext context) {
+    final refresh = useState<bool>(false);
+    final memberList = useState<List<Member>>([]);
+
+     useEffect(() {
+      Future.microtask(() async {
+        await getMember(memberList);
+      });
+      return;
+    },  [refresh.value]);
+
     return Expanded(
         child: Padding(
             padding: EdgeInsets.fromLTRB(20, 0, 20, 0),
@@ -26,14 +37,21 @@ class MemberPage extends HookWidget {
                     CustomIconButton(
                         icon: Icons.add_circle,
                         key: key,
-                        onPressed: () {},
+                        onPressed: () async{
+                            final res = await showDialog<bool>(
+                              context: context,
+                              builder: (context) => const NewMemberDialog(),
+                            );
+                            refresh.value = !refresh.value;
+                        },
                         text: 'New Member ',
                         elevation: 0,
                         textSize: 14,
                         padding: const EdgeInsets.fromLTRB(0, 0, 0, 0)),
-                    Spacer(),
+                    
                     CustomSearch(onChanged: (value) {
                     },text: 'Seach member',),
+                    Spacer(),
                     IconButton(onPressed: (){}, icon: Icon(Icons.sort,color: kColorDarker.withOpacity(.5),))
                   ],
                 ),
@@ -47,8 +65,7 @@ class MemberPage extends HookWidget {
                                 padding: const EdgeInsets.fromLTRB(20, 10, 20, 10),
                                 child: Row(
                                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                  // ignore: prefer_const_literals_to_create_immutables
-                                  children: [
+                                  children: const [
                                     Expanded(
                                       flex: 2,
                                       child: Text('Name',
@@ -82,13 +99,13 @@ class MemberPage extends HookWidget {
                           Divider()
                         ],
                       ),
-                membersList(context),
+                buildmembersList(context,memberList),
               ],
             )));
   }
 
 
-  Future<List<Member>> getMember() async {
+  getMember(ValueNotifier memberList) async {
     List<Member> newMember = [];
 
     await FirebaseFirestore.instance
@@ -114,35 +131,14 @@ class MemberPage extends HookWidget {
                 newMember.add(member);
               })
             });
-    debugPrint(newMember.toString());
-    return newMember;
+    memberList.value = newMember;
   }
 
-  Widget membersList(BuildContext context) {
-    return FutureBuilder(
-        future: getMember(),
-        builder: (BuildContext context, AsyncSnapshot snapshot) {
-          if (snapshot.connectionState == ConnectionState.done) {
-            if (snapshot.data.length <= 0) {
-              // ignore: avoid_unnecessary_containers
-              return Center(
-                child: Column(
-                  // ignore: prefer_const_literals_to_create_immutables
-                  children: [
-                    Icon(
-                      Icons.folder_outlined,
-                      color: kColorDarkBlue,
-                      size: 70,
-                    ),
-                    Text('No member found.'),
-                  ],
-                ),
-              );
-            } else {
-              return Expanded(
+  Widget buildmembersList(BuildContext context, ValueNotifier memberList) {
+    return Expanded(
                 child: ListView.builder(
                     //shrinkWrap: true,
-                    itemCount: snapshot.data.length,
+                    itemCount: memberList.value.length,
                     itemBuilder: (context, index) {
                       return Column(
                         children: [
@@ -158,23 +154,23 @@ class MemberPage extends HookWidget {
                                     Expanded(
                                       flex: 2,
                                       child: Text(
-                                            snapshot.data[index].firstName + ' ' + snapshot.data[index].middleName + '. ' + snapshot.data[index].lastName + ' ' + snapshot.data[index].extensionName,
+                                            memberList.value[index].firstName + ' ' + memberList.value[index].middleName + '. ' + memberList.value[index].lastName + ' ' + memberList.value[index].extensionName,
                                             style: kTextStyleHeadline2Dark,
                                           ),
                                     ),
                                     Expanded(
                                       flex: 2,
-                                      child: Text(snapshot.data[index].address,
+                                      child: Text(memberList.value[index].address,
                                           style: kTextStyleHeadline2Dark),
                                     ),
                                     Expanded(
                                       flex: 2,
-                                      child: Text(snapshot.data[index].contact,
+                                      child: Text(memberList.value[index].contact,
                                           style: kTextStyleHeadline2Dark),
                                     ),
                                      Expanded(
                                       flex: 2,
-                                      child: Text(snapshot.data[index].status,
+                                      child: Text(memberList.value[index].status,
                                           style: kTextStyleHeadline2Dark),
                                     ),
                                     Spacer(),
@@ -189,18 +185,5 @@ class MemberPage extends HookWidget {
                       );
                     }),
               );
-            }
-          } else {
-            return Container(
-              child: Column(
-                children: const [
-                   Center(
-                  child: Text('loading.'),
-                ),
-                ],
-              ),
-            );
-          }
-        });
   }
 }

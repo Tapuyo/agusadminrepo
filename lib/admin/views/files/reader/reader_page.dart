@@ -1,5 +1,6 @@
 import 'package:agus/admin/models/area_models.dart';
 import 'package:agus/admin/models/reader_model.dart';
+import 'package:agus/admin/views/files/reader/dialog/new_reader_dialog.dart';
 import 'package:agus/constants/constant.dart';
 import 'package:agus/utils/custom_icon_button.dart';
 import 'package:agus/utils/custom_search.dart';
@@ -13,6 +14,15 @@ class ReaderPage extends HookWidget {
 
   @override
   Widget build(BuildContext context) {
+    final refresh = useState<bool>(false);
+    final readerList = useState<List<Reader>>([]);
+
+     useEffect(() {
+      Future.microtask(() async {
+        await getReader(readerList);
+      });
+    },  [refresh.value]);
+
     return Expanded(
         child: Padding(
             padding: EdgeInsets.fromLTRB(20, 0, 20, 0),
@@ -26,14 +36,21 @@ class ReaderPage extends HookWidget {
                     CustomIconButton(
                         icon: Icons.add_circle,
                         key: key,
-                        onPressed: () {},
+                        onPressed: () async {
+                           final res = await showDialog<bool>(
+                              context: context,
+                              builder: (context) => const NewReaderDialog(),
+                            );
+                            refresh.value = !refresh.value;
+                        },
                         text: 'New Reader ',
                         elevation: 0,
                         textSize: 14,
                         padding: const EdgeInsets.fromLTRB(0, 0, 0, 0)),
-                    Spacer(),
+                    
                     CustomSearch(onChanged: (value) {
                     },text: 'Seach reader',),
+                    Spacer(),
                     IconButton(onPressed: (){}, icon: Icon(Icons.sort,color: kColorDarker.withOpacity(.5),))
                   ],
                 ),
@@ -48,7 +65,7 @@ class ReaderPage extends HookWidget {
                                 child: Row(
                                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                   // ignore: prefer_const_literals_to_create_immutables
-                                  children: [
+                                  children: const [
                                     Expanded(
                                       flex: 2,
                                       child: Text('Name',
@@ -77,13 +94,13 @@ class ReaderPage extends HookWidget {
                           Divider()
                         ],
                       ),
-                readerList(context),
+                _buildReaderList(context, readerList),
               ],
             )));
   }
 
 
-  Future<List<Reader>> getArea() async {
+  getReader(ValueNotifier readerList) async {
     List<Reader> newReader = [];
 
     await FirebaseFirestore.instance
@@ -105,34 +122,14 @@ class ReaderPage extends HookWidget {
               })
             });
     debugPrint(newReader.toString());
-    return newReader;
+    readerList.value = newReader;
   }
 
-  Widget readerList(BuildContext context) {
-    return FutureBuilder(
-        future: getArea(),
-        builder: (BuildContext context, AsyncSnapshot snapshot) {
-          if (snapshot.connectionState == ConnectionState.done) {
-            if (snapshot.data.length <= 0) {
-              // ignore: avoid_unnecessary_containers
-              return Container(
-                child: Column(
-                  // ignore: prefer_const_literals_to_create_immutables
-                  children: [
-                    Icon(
-                      Icons.folder_outlined,
-                      color: kColorDarkBlue,
-                      size: 70,
-                    ),
-                    Text('No reader found.'),
-                  ],
-                ),
-              );
-            } else {
-              return Expanded(
+  Widget _buildReaderList(BuildContext context, ValueNotifier readerList) {
+    return Expanded(
                 child: ListView.builder(
                     //shrinkWrap: true,
-                    itemCount: snapshot.data.length,
+                    itemCount: readerList.value.length,
                     itemBuilder: (context, index) {
                       return Column(
                         children: [
@@ -148,18 +145,18 @@ class ReaderPage extends HookWidget {
                                     Expanded(
                                       flex: 2,
                                       child: Text(
-                                            snapshot.data[index].firstName + ' ' + snapshot.data[index].middleName + '. ' + snapshot.data[index].lastName,
+                                            '${readerList.value[index].firstName}  ${readerList.value[index].middleName}.  ${readerList.value[index].lastName}',
                                             style: kTextStyleHeadline2Dark,
                                           ),
                                     ),
                                     Expanded(
                                       flex: 2,
-                                      child: Text(snapshot.data[index].contact,
+                                      child: Text(readerList.value[index].contact,
                                           style: kTextStyleHeadline2Dark),
                                     ),
                                     Expanded(
                                       flex: 2,
-                                      child: Text(snapshot.data[index].address,
+                                      child: Text(readerList.value[index].address,
                                           style: kTextStyleHeadline2Dark),
                                     ),
                                     Spacer(),
@@ -174,18 +171,5 @@ class ReaderPage extends HookWidget {
                       );
                     }),
               );
-            }
-          } else {
-            return Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: const [
-                 Center(
-                child: Text('loading.'),
-              ),
-              ],
-            );
-          }
-        });
   }
 }

@@ -1,4 +1,5 @@
 import 'package:agus/constants/constant.dart';
+import 'package:agus/providers/billings_provider.dart';
 import 'package:agus/providers/home_provider.dart';
 import 'package:agus/route_generator.dart';
 import 'package:agus/routes.dart';
@@ -18,6 +19,7 @@ void main() async {
   runApp(
     MultiProvider(providers: [
       ChangeNotifierProvider(create: (_) => HomeProvider()),
+      ChangeNotifierProvider(create: (_) => BillingsProvider()),
     ],child: const MyApp(),)
   
   );

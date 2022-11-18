@@ -1,5 +1,6 @@
 import 'package:agus/admin/models/area_models.dart';
 import 'package:agus/admin/models/connection_model.dart';
+import 'package:agus/admin/views/files/connection/dialog/new_connection_dialog.dart';
 import 'package:agus/constants/constant.dart';
 import 'package:agus/utils/custom_icon_button.dart';
 import 'package:agus/utils/custom_search.dart';
@@ -13,6 +14,16 @@ class ConnectionPage extends HookWidget {
 
   @override
   Widget build(BuildContext context) {
+    final refresh = useState<bool>(false);
+    final connList = useState<List<Connection>>([]);
+
+     useEffect(() {
+      Future.microtask(() async {
+        await getConnection(connList);
+      });
+    },  [refresh.value]);
+
+
     return Expanded(
         child: Padding(
             padding: EdgeInsets.fromLTRB(20, 0, 20, 0),
@@ -26,14 +37,21 @@ class ConnectionPage extends HookWidget {
                     CustomIconButton(
                         icon: Icons.add_circle,
                         key: key,
-                        onPressed: () {},
+                        onPressed: ()async {
+                          final res = await showDialog<bool>(
+                              context: context,
+                              builder: (context) => const NewConnectioDialog(),
+                            );
+                            refresh.value = !refresh.value;
+                        },
                         text: 'New Connection ',
                         elevation: 0,
                         textSize: 14,
                         padding: const EdgeInsets.fromLTRB(0, 0, 0, 0)),
-                    Spacer(),
+                    
                     CustomSearch(onChanged: (value) {
                     },text: 'Seach connection',),
+                    Spacer(),
                     IconButton(onPressed: (){}, icon: Icon(Icons.sort,color: kColorDarker.withOpacity(.5),))
                   ],
                 ),
@@ -77,13 +95,13 @@ class ConnectionPage extends HookWidget {
                           Divider()
                         ],
                       ),
-                connectionList(context),
+                connectionList(context,connList),
               ],
             )));
   }
 
 
-  Future<List<Connection>> getConnection() async {
+  getConnection(ValueNotifier connList) async {
     List<Connection> newConnection = [];
 
     await FirebaseFirestore.instance
@@ -102,35 +120,14 @@ class ConnectionPage extends HookWidget {
                 newConnection.add(conn);
               })
             });
-    debugPrint(newConnection.toString());
-    return newConnection;
+    connList.value = newConnection;
   }
 
-  Widget connectionList(BuildContext context) {
-    return FutureBuilder(
-        future: getConnection(),
-        builder: (BuildContext context, AsyncSnapshot snapshot) {
-          if (snapshot.connectionState == ConnectionState.done) {
-            if (snapshot.data.length <= 0) {
-              // ignore: avoid_unnecessary_containers
-              return Center(
-                child: Column(
-                  // ignore: prefer_const_literals_to_create_immutables
-                  children: [
-                    Icon(
-                      Icons.folder_outlined,
-                      color: kColorDarkBlue,
-                      size: 70,
-                    ),
-                    Text('No connection type found.'),
-                  ],
-                ),
-              );
-            } else {
-              return Expanded(
+  Widget connectionList(BuildContext context, ValueNotifier connList) {
+    return Expanded(
                 child: ListView.builder(
                     //shrinkWrap: true,
-                    itemCount: snapshot.data.length,
+                    itemCount: connList.value.length,
                     itemBuilder: (context, index) {
                       return Column(
                         children: [
@@ -146,18 +143,18 @@ class ConnectionPage extends HookWidget {
                                     Expanded(
                                       flex: 2,
                                       child: Text(
-                                            snapshot.data[index].name,
+                                            connList.value[index].name,
                                             style: kTextStyleHeadline2Dark,
                                           ),
                                     ),
                                     Expanded(
                                       flex: 3,
-                                      child: Text(snapshot.data[index].description,
+                                      child: Text(connList.value[index].description,
                                           style: kTextStyleHeadline2Dark),
                                     ),
                                     Expanded(
                                       flex: 2,
-                                      child: Text('Php ${snapshot.data[index].price.toString()}',
+                                      child: Text('Php ${connList.value[index].price.toString()}',
                                           style: kTextStyleHeadline2Dark),
                                     ),
                                     Spacer(),
@@ -172,18 +169,5 @@ class ConnectionPage extends HookWidget {
                       );
                     }),
               );
-            }
-          } else {
-            return Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: const [
-                 Center(
-                child: Text('loading.'),
-              ),
-              ],
-            );
-          }
-        });
   }
 }

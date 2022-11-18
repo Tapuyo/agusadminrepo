@@ -1,14 +1,18 @@
+import 'dart:js';
+
 import 'package:agus/admin/models/area_models.dart';
 import 'package:agus/admin/models/billing_members_models.dart';
 import 'package:agus/admin/views/billing/dialog/billing_pay_dialog.dart';
 import 'package:agus/admin/views/billing/dialog/flat_rate_dialog.dart';
 import 'package:agus/constants/constant.dart';
+import 'package:agus/providers/billings_provider.dart';
 import 'package:agus/utils/custom_icon_button.dart';
 import 'package:agus/utils/custom_search.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
+import 'package:provider/provider.dart';
 
 import 'dialog/billing_dialog.dart';
 
@@ -18,14 +22,29 @@ class BillingContentPage extends HookWidget {
   final String billMonth;
   final String billYear;
   const BillingContentPage(
-      {Key? key, required this.docID, required this.openBilling,required this.billMonth,required this.billYear})
+      {Key? key,
+      required this.docID,
+      required this.openBilling,
+      required this.billMonth,
+      required this.billYear})
       : super(key: key);
 
   @override
   Widget build(BuildContext context) {
+    final provider = context.read<BillingsProvider>();
     final lock = useState<bool>(true);
     final fBilling = useState<Future?>(null);
     final billingMember = useState<List<BillingMember>>([]);
+    final areaList = useState<List<Area>>([]);
+    final areaSelected = useState<String>('All');
+    List readUnread = ['All', 'Read', 'Unread'];
+    List paidUnpaid = ['All', 'Paid', 'Unpaid'];
+    List flatRat = ['All', 'Flat Rate', 'Non Flat Rate'];
+    final readSelect = useState<String>(provider.read);
+    final paidSelect = useState<String>(provider.paid);
+    final flatRateSelect = useState<String>(provider.flatRate);
+    final searchName = useState<String>(provider.issearchString);
+    
 
     useEffect(() {
       if (openBilling) {
@@ -33,125 +52,644 @@ class BillingContentPage extends HookWidget {
       } else {
         lock.value = true;
       }
-    }, []);
+      Future.microtask(() async {
+        await getAreaDropDown(areaList);
+      });
+    }, const []);
 
     return Expanded(
-      child: DecoratedBox(
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(20),
-        ),
-        child: SizedBox(
-          height: MediaQuery.of(context).size.height - 100,
-          child: Padding(
-              padding: EdgeInsets.fromLTRB(20, 0, 20, 0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      CustomIconButton(
-                          enable: openBilling,
-                          icon: lock.value ? Icons.lock : Icons.lock_open,
-                          key: key,
-                          onPressed: () {
-                            if (openBilling) {
-                              lock.value = !lock.value;
-                            }
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(0, 0, 20, 0),
+        child: DecoratedBox(
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(20),
+          ),
+          child: SizedBox(
+            height: MediaQuery.of(context).size.height - 80,
+            child: Padding(
+                padding: EdgeInsets.fromLTRB(20, 0, 20, 0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        CustomIconButton(
+                            enable: openBilling,
+                            icon: lock.value ? Icons.lock : Icons.lock_open,
+                            key: key,
+                            onPressed: () {
+                              if (openBilling) {
+                                lock.value = !lock.value;
+                              }
+                            },
+                            text: openBilling
+                                ? lock.value
+                                    ? 'Unlock '
+                                    : 'lock'
+                                : 'Unlock',
+                            elevation: 0,
+                            textSize: 14,
+                            padding: const EdgeInsets.fromLTRB(0, 0, 0, 0)),
+                        CustomSearch(
+                          onChanged: (value) {
+                            searchName.value = value;
+                            provider.setSearchString(value);
                           },
-                          text: openBilling
-                              ? lock.value
-                                  ? 'Unlock '
-                                  : 'lock'
-                              : 'Unlock',
-                          elevation: 0,
-                          textSize: 14,
-                          padding: const EdgeInsets.fromLTRB(0, 0, 0, 0)),
-                      CustomSearch(
-                        onChanged: (value) {},
-                        text: 'Seach area',
-                      ),
-                      Spacer(),
-                      CustomIconButton(
-                          icon: Icons.print,
-                          key: key,
-                          onPressed: () {
+                          text: 'Seach name',
+                        ),
+                        
+                        const Spacer(),
+                        CustomIconButton(
+                            icon: Icons.print,
+                            key: key,
+                            onPressed: () {},
+                            text: 'Print ',
+                            elevation: 0,
+                            textSize: 14,
+                            padding: const EdgeInsets.fromLTRB(0, 0, 0, 0)),
+                      ],
+                    ),
+                    Divider(),
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      children: [
+                        
+                        if (areaList.value.isNotEmpty) ...[
+                          const Text('Choose Area: '),
+                          const SizedBox(
+                            width: 8,
+                          ),
+                          DropdownButton(
+                            hint: const Text(
+                                'Choose area'), // Not necessary for Option 1
+                            value: areaSelected.value,
+                            onChanged: (newValue) {
+                              areaSelected.value = newValue.toString();
+                            },
+                            items: areaList.value.map((area) {
+                              return DropdownMenuItem(
+                                child: Text(area.name),
+                                value: area.id,
+                              );
+                            }).toList(),
+                          ),
+                        ],
+                        const SizedBox(
+                          width: 12,
+                        ),
+                        const Text('Reading status: '),
+                          const SizedBox(
+                            width: 8,
+                        ),
+                        DropdownButton(
+                          hint:
+                              const Text('Status'), // Not necessary for Option 1
+                          value: readSelect.value,
+                          onChanged: (newValue) {
                             
+                            readSelect.value = newValue.toString();
+                            provider.setRead(newValue.toString());
                           },
-                          text: 'Print ',
-                          elevation: 0,
-                          textSize: 14,
-                          padding: const EdgeInsets.fromLTRB(0, 0, 0, 0)),
-                      CustomIconButton(
-                          icon: Icons.note,
-                          key: key,
-                          onPressed: () {
-                           
+                          items: readUnread.map((read) {
+                            return DropdownMenuItem(
+                              child: Text(read),
+                              value: read,
+                            );
+                          }).toList(),
+                        ),
+                        const SizedBox(
+                          width: 12,
+                        ),
+                        const Text('Payment status: '),
+                          const SizedBox(
+                            width: 8,
+                        ),
+                        DropdownButton(
+                          hint:
+                              const Text('Payment'), // Not necessary for Option 1
+                          value: paidSelect.value,
+                          onChanged: (newValue) {
+                            paidSelect.value = newValue.toString();
+                            provider.setPaid(newValue.toString());
                           },
-                          text: 'Print Bill',
-                          elevation: 0,
-                          textSize: 14,
-                          padding: const EdgeInsets.fromLTRB(0, 0, 0, 0)),
-                    ],
-                  ),
-                  Divider(),
-                  billMemberList(context, lock, fBilling, billingMember),
-                ],
-              )),
+                          items: paidUnpaid.map((read) {
+                            return DropdownMenuItem(
+                              child: Text(read),
+                              value: read,
+                            );
+                          }).toList(),
+                        ),
+                        const SizedBox(
+                          width: 12,
+                        ),
+                        const Text('Flatrate: '),
+                          const SizedBox(
+                            width: 8,
+                        ),
+                        DropdownButton(
+                          hint: const Text(
+                              'Flat Rate'), // Not necessary for Option 1
+                          value: flatRateSelect.value,
+                          onChanged: (newValue) {
+                            flatRateSelect.value = newValue.toString();
+                            provider.setFlatRate(newValue.toString());
+                          },
+                          items: flatRat.map((read) {
+                            return DropdownMenuItem(
+                              child: Text(read),
+                              value: read,
+                            );
+                          }).toList(),
+                        ),
+                        const SizedBox(
+                          width: 12,
+                        ),
+                        CustomIconButton(
+                            enableColor: Colors.grey.withOpacity(.5),
+                            enable: true,
+                            icon: Icons.clear,
+                            key: key,
+                            onPressed: () {
+                              areaSelected.value = 'All';
+                              readSelect.value = 'All';
+                              flatRateSelect.value = 'All';
+                              paidSelect.value = 'All';
+                              provider.setClear();
+                            },
+                            text: 'Clear ',
+                            elevation: 0,
+                            textSize: 14,
+                            padding: const EdgeInsets.fromLTRB(0, 0, 0, 0)),
+                       
+                      ],
+                    ),
+                    Divider(),
+                    billMemberList(
+                        context, lock, fBilling, billingMember, areaSelected),
+                  ],
+                )),
+          ),
         ),
       ),
     );
   }
 
-  Future<List<BillingMember>> getArea() async {
+  Future<List<Area>> getAreaDropDown(ValueNotifier areaList) async {
+    List<Area> areaTmp = [];
+
+    await FirebaseFirestore.instance
+        .collection('area')
+        .get()
+        .then((QuerySnapshot querySnapshot) => {
+              querySnapshot.docs.forEach((doc) async {
+                debugPrint(doc.id);
+                Area area = Area(
+                  doc.id,
+                  doc['code'],
+                  doc['name'],
+                  doc['description'],
+                  doc['status'],
+                  doc['date'].toString(),
+                );
+
+                areaTmp.add(area);
+              })
+            });
+    Area areaAll = Area(
+      'All',
+      'All',
+      'All',
+      'All',
+      'All',
+      'All',
+    );
+    areaTmp.add(areaAll);
+    areaList.value = areaTmp;
+    return areaList.value;
+  }
+
+  Future<List<BillingMember>> getArea(
+      BuildContext context, String areaSelected) async {
     List<BillingMember> billingMember = [];
+    final provider = context.read<BillingsProvider>();
+    final isRead = provider.isRead;
+    final isPaid = provider.isPaid;
+    final isFlatRate = provider.isFlateRate;
+    final searchString = provider.issearchString;
+
     if (docID.isEmpty) {
       return [];
     }
 
-    await FirebaseFirestore.instance
-        .collection('membersBilling').where('billingId', isEqualTo: docID)
-        .get()
-        .then((QuerySnapshot querySnapshot) => {
-              querySnapshot.docs.forEach((doc) async {
-                DateTime dateBill = (doc['dateBill'] as Timestamp).toDate();
-                DateTime dueBalance = (doc['dueDateBalance']  as Timestamp).toDate();
-                BillingMember bill = BillingMember(
-                  doc.id,
-                  doc['memberId'].toString(),
-                  doc['name'].toString(),
-                  doc['areaId'].toString(),
-                  doc['connectionId'].toString(),
-                  doc['previousReading'],
-                  doc['currentReading'],
-                  doc['dateRead'].toString(),
-                  doc['totalCubic'],
-                  doc['billingPrice'],
-                  doc['flatRate'].toString(),
-                  doc['flatRatePrice'],
-                  doc['status'].toString(),
-                  doc['toBill'],
-                  doc['balance'],
-                  dateBill.toString(),
-                  dueBalance.toString()
-                );
+    if (areaSelected.isEmpty || areaSelected == 'All') {
+      await FirebaseFirestore.instance
+          .collection('membersBilling')
+          .where('billingId', isEqualTo: docID)
+          .get()
+          .then((QuerySnapshot querySnapshot) => {
+                querySnapshot.docs.forEach((doc) async {
+                  DateTime dateBill = (doc['dateBill'] as Timestamp).toDate();
+                  DateTime dueBalance =
+                      (doc['dueDateBalance'] as Timestamp).toDate();
+                  BillingMember bill = BillingMember(
+                      doc.id,
+                      doc['memberId'].toString(),
+                      doc['name'].toString(),
+                      doc['areaId'].toString(),
+                      doc['connectionId'].toString(),
+                      doc['previousReading'],
+                      doc['currentReading'],
+                      doc['dateRead'].toString(),
+                      doc['totalCubic'],
+                      doc['billingPrice'],
+                      doc['flatRate'].toString(),
+                      doc['flatRatePrice'],
+                      doc['status'].toString(),
+                      doc['toBill'],
+                      doc['balance'],
+                      dateBill.toString(),
+                      dueBalance.toString());
+                  if (isRead == 'All') {
+                    if (isPaid == 'All') {
+                      if (isFlatRate == 'All') {
+                        if(doc['name'].toString().contains(searchString)){
+                            billingMember.add(bill);
+                          }
+                      } else if (isFlatRate == 'Flat Rate') {
+                        if (doc['flatRatePrice'] > 0) {
+                          if(doc['name'].toString().contains(searchString)){
+                            billingMember.add(bill);
+                          }
+                          
+                        }
+                      } else {
+                        if (doc['flatRatePrice'] <= 0) {
+                          if(doc['name'].toString().contains(searchString)){
+                            billingMember.add(bill);
+                          }
+                        }
+                      }
+                    } else {
+                      if (isPaid == 'Paid') {
+                        if (doc['status'] == 'paid') {
+                          if (isFlatRate == 'All') {
+                            if(doc['name'].toString().contains(searchString)){
+                            billingMember.add(bill);
+                          }
+                          } else if (isFlatRate == 'Flat Rate') {
+                            if (doc['flatRatePrice'] > 0) {
+                              if(doc['name'].toString().contains(searchString)){
+                            billingMember.add(bill);
+                          }
+                            }
+                          } else {
+                            if (doc['flatRatePrice'] <= 0) {
+                              if(doc['name'].toString().contains(searchString)){
+                            billingMember.add(bill);
+                          }
+                            }
+                          }
+                        }
+                      } else {
+                        if (doc['status'] == 'unpaid') {
+                          if (isFlatRate == 'All') {
+                            if(doc['name'].toString().contains(searchString)){
+                            billingMember.add(bill);
+                          }
+                          } else if (isFlatRate == 'Flat Rate') {
+                            if (doc['flatRatePrice'] > 0) {
+                              if(doc['name'].toString().contains(searchString)){
+                            billingMember.add(bill);
+                          }
+                            }
+                          } else {
+                            if (doc['flatRatePrice'] <= 0) {
+                              if(doc['name'].toString().contains(searchString)){
+                            billingMember.add(bill);
+                          }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  } else if (isRead == 'Read') {
+                    if (doc['currentReading'] > 0) {
+                      if (isPaid == 'All') {
+                        if (isFlatRate == 'All') {
+                         if(doc['name'].toString().contains(searchString)){
+                            billingMember.add(bill);
+                          }
+                        } else if (isFlatRate == 'Flat Rate') {
+                          if (doc['flatRatePrice'] > 0) {
+                            if(doc['name'].toString().contains(searchString)){
+                            billingMember.add(bill);
+                          }
+                          }
+                        } else {
+                          if (doc['flatRatePrice'] <= 0) {
+                            if(doc['name'].toString().contains(searchString)){
+                            billingMember.add(bill);
+                          }
+                          }
+                        }
+                      } else {
+                        if (isPaid == 'Paid') {
+                          if (doc['status'] == 'paid') {
+                            if (isFlatRate == 'All') {
+                              if(doc['name'].toString().contains(searchString)){
+                            billingMember.add(bill);
+                          }
+                            } else if (isFlatRate == 'Flat Rate') {
+                              if (doc['flatRatePrice'] > 0) {
+                                if(doc['name'].toString().contains(searchString)){
+                            billingMember.add(bill);
+                          }
+                              }
+                            } else {
+                              if (doc['flatRatePrice'] <= 0) {
+                                if(doc['name'].toString().contains(searchString)){
+                            billingMember.add(bill);
+                          }
+                              }
+                            }
+                          }
+                        } else {
+                          if (doc['status'] == 'unpaid') {
+                            if (isFlatRate == 'All') {
+                              if(doc['name'].toString().contains(searchString)){
+                            billingMember.add(bill);
+                          }
+                            } else if (isFlatRate == 'Flat Rate') {
+                              if (doc['flatRatePrice'] > 0) {
+                                if(doc['name'].toString().contains(searchString)){
+                            billingMember.add(bill);
+                          }
+                              }
+                            } else {
+                              if (doc['flatRatePrice'] <= 0) {
+                                if(doc['name'].toString().contains(searchString)){
+                            billingMember.add(bill);
+                          }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  } else {
+                    if (doc['currentReading'] <= 0) {
+                      if (isPaid == 'All') {
+                        if (isFlatRate == 'All') {
+                          if(doc['name'].toString().contains(searchString)){
+                            billingMember.add(bill);
+                          }
+                        } else if (isFlatRate == 'Flat Rate') {
+                          if (doc['flatRatePrice'] > 0) {
+                            if(doc['name'].toString().contains(searchString)){
+                            billingMember.add(bill);
+                          }
+                          }
+                        } else {
+                          if (doc['flatRatePrice'] <= 0) {
+                            if(doc['name'].toString().contains(searchString)){
+                            billingMember.add(bill);
+                          }
+                          }
+                        }
+                      } else {
+                        if (isPaid == 'Paid') {
+                          if (doc['status'] == 'paid') {
+                            if (isFlatRate == 'All') {
+                              if(doc['name'].toString().contains(searchString)){
+                            billingMember.add(bill);
+                          }
+                            } else if (isFlatRate == 'Flat Rate') {
+                              if (doc['flatRatePrice'] > 0) {
+                                if(doc['name'].toString().contains(searchString)){
+                            billingMember.add(bill);
+                          }
+                              }
+                            } else {
+                              if (doc['flatRatePrice'] <= 0) {
+                                if(doc['name'].toString().contains(searchString)){
+                            billingMember.add(bill);
+                          }
+                              }
+                            }
+                          }
+                        } else {
+                          if (doc['status'] == 'unpaid') {
+                            if (isFlatRate == 'All') {
+                              if(doc['name'].toString().contains(searchString)){
+                            billingMember.add(bill);
+                          }
+                            } else if (isFlatRate == 'Flat Rate') {
+                              if (doc['flatRatePrice'] > 0) {
+                                if(doc['name'].toString().contains(searchString)){
+                            billingMember.add(bill);
+                          }
+                              }
+                            } else {
+                              if (doc['flatRatePrice'] <= 0) {
+                                if(doc['name'].toString().contains(searchString)){
+                            billingMember.add(bill);
+                          }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                })
+              });
+    } else {
+      await FirebaseFirestore.instance
+          .collection('membersBilling')
+          .where('billingId', isEqualTo: docID)
+          .where('areaId', isEqualTo: areaSelected)
+          .get()
+          .then((QuerySnapshot querySnapshot) => {
+                querySnapshot.docs.forEach((doc) async {
+                  DateTime dateBill = (doc['dateBill'] as Timestamp).toDate();
+                  DateTime dueBalance =
+                      (doc['dueDateBalance'] as Timestamp).toDate();
+                  BillingMember bill = BillingMember(
+                      doc.id,
+                      doc['memberId'].toString(),
+                      doc['name'].toString(),
+                      doc['areaId'].toString(),
+                      doc['connectionId'].toString(),
+                      doc['previousReading'],
+                      doc['currentReading'],
+                      doc['dateRead'].toString(),
+                      doc['totalCubic'],
+                      doc['billingPrice'],
+                      doc['flatRate'].toString(),
+                      doc['flatRatePrice'],
+                      doc['status'].toString(),
+                      doc['toBill'],
+                      doc['balance'],
+                      dateBill.toString(),
+                      dueBalance.toString());
 
-                billingMember.add(bill);
-              })
-            });
+                  if (isRead == 'All') {
+                    if (isPaid == 'All') {
+                      if (isFlatRate == 'All') {
+                        billingMember.add(bill);
+                      } else if (isFlatRate == 'Flat Rate') {
+                        if (doc['flatRatePrice'] > 0) {
+                          billingMember.add(bill);
+                        }
+                      } else {
+                        if (doc['flatRatePrice'] <= 0) {
+                          billingMember.add(bill);
+                        }
+                      }
+                    } else {
+                      if (isPaid == 'Paid') {
+                        if (doc['status'] == 'paid') {
+                          if (isFlatRate == 'All') {
+                            billingMember.add(bill);
+                          } else if (isFlatRate == 'Flat Rate') {
+                            if (doc['flatRatePrice'] > 0) {
+                              billingMember.add(bill);
+                            }
+                          } else {
+                            if (doc['flatRatePrice'] <= 0) {
+                              billingMember.add(bill);
+                            }
+                          }
+                        }
+                      } else {
+                        if (doc['status'] == 'unpaid') {
+                          if (isFlatRate == 'All') {
+                            billingMember.add(bill);
+                          } else if (isFlatRate == 'Flat Rate') {
+                            if (doc['flatRatePrice'] > 0) {
+                              billingMember.add(bill);
+                            }
+                          } else {
+                            if (doc['flatRatePrice'] <= 0) {
+                              billingMember.add(bill);
+                            }
+                          }
+                        }
+                      }
+                    }
+                  } else if (isRead == 'Read') {
+                    if (doc['currentReading'] > 0) {
+                      if (isPaid == 'All') {
+                        if (isFlatRate == 'All') {
+                          billingMember.add(bill);
+                        } else if (isFlatRate == 'Flat Rate') {
+                          if (doc['flatRatePrice'] > 0) {
+                            billingMember.add(bill);
+                          }
+                        } else {
+                          if (doc['flatRatePrice'] <= 0) {
+                            billingMember.add(bill);
+                          }
+                        }
+                      } else {
+                        if (isPaid == 'Paid') {
+                          if (doc['status'] == 'paid') {
+                            if (isFlatRate == 'All') {
+                              billingMember.add(bill);
+                            } else if (isFlatRate == 'Flat Rate') {
+                              if (doc['flatRatePrice'] > 0) {
+                                billingMember.add(bill);
+                              }
+                            } else {
+                              if (doc['flatRatePrice'] <= 0) {
+                                billingMember.add(bill);
+                              }
+                            }
+                          }
+                        } else {
+                          if (doc['status'] == 'unpaid') {
+                            if (isFlatRate == 'All') {
+                              billingMember.add(bill);
+                            } else if (isFlatRate == 'Flat Rate') {
+                              if (doc['flatRatePrice'] > 0) {
+                                billingMember.add(bill);
+                              }
+                            } else {
+                              if (doc['flatRatePrice'] <= 0) {
+                                billingMember.add(bill);
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  } else {
+                    if (doc['currentReading'] <= 0) {
+                      if (isPaid == 'All') {
+                        if (isFlatRate == 'All') {
+                          billingMember.add(bill);
+                        } else if (isFlatRate == 'Flat Rate') {
+                          if (doc['flatRatePrice'] > 0) {
+                            billingMember.add(bill);
+                          }
+                        } else {
+                          if (doc['flatRatePrice'] <= 0) {
+                            billingMember.add(bill);
+                          }
+                        }
+                      } else {
+                        if (isPaid == 'Paid') {
+                          if (doc['status'] == 'paid') {
+                            if (isFlatRate == 'All') {
+                              billingMember.add(bill);
+                            } else if (isFlatRate == 'Flat Rate') {
+                              if (doc['flatRatePrice'] > 0) {
+                                billingMember.add(bill);
+                              }
+                            } else {
+                              if (doc['flatRatePrice'] <= 0) {
+                                billingMember.add(bill);
+                              }
+                            }
+                          }
+                        } else {
+                          if (doc['status'] == 'unpaid') {
+                            if (isFlatRate == 'All') {
+                              billingMember.add(bill);
+                            } else if (isFlatRate == 'Flat Rate') {
+                              if (doc['flatRatePrice'] > 0) {
+                                billingMember.add(bill);
+                              }
+                            } else {
+                              if (doc['flatRatePrice'] <= 0) {
+                                billingMember.add(bill);
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                })
+              });
+    }
     return billingMember;
   }
 
-
-
-  Widget billMemberList(BuildContext context, ValueNotifier lock,
-      ValueNotifier fBilling, ValueNotifier billingMember) {
+  Widget billMemberList(
+      BuildContext context,
+      ValueNotifier lock,
+      ValueNotifier fBilling,
+      ValueNotifier billingMember,
+      ValueNotifier areaSelected) {
     final _controllers = useState<List<TextEditingController>>([]);
     final totalList = useState<List<String>>([]);
 
-    fBilling.value = getArea();
+    fBilling.value = getArea(context, areaSelected.value);
 
     return FutureBuilder(
         future: fBilling.value,
@@ -315,7 +853,11 @@ class BillingContentPage extends HookWidget {
                                         },
                                         child: Column(
                                           children: [
-                                            Text(snapshot.data[index].balance <= 0 ? 'Billing Amount':'Original Billing',
+                                            Text(
+                                                snapshot.data[index].balance <=
+                                                        0
+                                                    ? 'Billing Amount'
+                                                    : 'Original Billing',
                                                 style: kTextStyleHeadline1),
                                             SizedBox(
                                               height: 4,
@@ -335,7 +877,6 @@ class BillingContentPage extends HookWidget {
                                             //     style:
                                             //         kTextStyleHeadlineClickable),
                                             // ]
-                                            
                                           ],
                                         ),
                                       ),
@@ -352,15 +893,23 @@ class BillingContentPage extends HookWidget {
                                                   snapshot.data[index].name,
                                                   fBilling,
                                                   snapshot.data[index].toBill,
-                                                   snapshot.data[index].flatRatePrice.toStringAsFixed(2),
-                                                   snapshot.data[index].memberId,
-                                                   snapshot.data[index].billingPrice.toStringAsFixed(2),
-                                                   snapshot.data[index].areaId,
-                                                   snapshot.data[index].connectionId,
-                                                   snapshot.data[index].balance.toString(),
-                                                   snapshot.data[index].dateBill.toString(),
-                                                   snapshot.data[index].dueDateBalance.toString()
-                                                   ));
+                                                  snapshot
+                                                      .data[index].flatRatePrice
+                                                      .toStringAsFixed(2),
+                                                  snapshot.data[index].memberId,
+                                                  snapshot
+                                                      .data[index].billingPrice
+                                                      .toStringAsFixed(2),
+                                                  snapshot.data[index].areaId,
+                                                  snapshot
+                                                      .data[index].connectionId,
+                                                  snapshot.data[index].balance
+                                                      .toString(),
+                                                  snapshot.data[index].dateBill
+                                                      .toString(),
+                                                  snapshot.data[index]
+                                                      .dueDateBalance
+                                                      .toString()));
                                         },
                                         icon: Icon(Icons.menu))
                                   ],
@@ -399,8 +948,9 @@ class BillingContentPage extends HookWidget {
                                     const SizedBox(
                                       width: 8,
                                     ),
-                                    if(snapshot.data[index].balance > 0)...[
-                                      toBlanceChip(snapshot.data[index].balance.toStringAsFixed(2))
+                                    if (snapshot.data[index].balance > 0) ...[
+                                      toBlanceChip(snapshot.data[index].balance
+                                          .toStringAsFixed(2))
                                     ]
                                   ],
                                 ),
@@ -471,7 +1021,7 @@ class BillingContentPage extends HookWidget {
         padding: const EdgeInsets.fromLTRB(8, 4, 8, 4),
         child: Center(
             child: Text(
-          status == 'unpaid' ? 'Unpaod':'Paid',
+          status == 'unpaid' ? 'Unpaid' : 'Paid',
           style: TextStyle(color: Colors.white, fontSize: 12),
         )),
       ),
@@ -560,8 +1110,8 @@ class BillingContentPage extends HookWidget {
             onPressed: () {
               double totalCubic = double.parse(controllers.text) -
                   double.parse(previousReading);
-              updateReadingMember(id, controllers.text, fBilling, totalCubic,
-                  flatRate, connectionId);
+              updateReadingMember(context, id, controllers.text, fBilling,
+                  totalCubic, flatRate, connectionId);
               Navigator.pop(context);
             },
             child: const Text('Yes'),
@@ -572,6 +1122,7 @@ class BillingContentPage extends HookWidget {
   }
 
   Future<void> updateReadingMember(
+      BuildContext context,
       String id,
       String currentReading,
       ValueNotifier fBilling,
@@ -581,10 +1132,7 @@ class BillingContentPage extends HookWidget {
     if (currentReading.isNotEmpty && totalCubic > 0 && flatRate == '' ||
         flatRate == '0') {
       double totalPrice = await getTotalBill(connectionId, totalCubic);
-      FirebaseFirestore.instance
-          .collection('membersBilling')
-          .doc(id)
-          .update({
+      FirebaseFirestore.instance.collection('membersBilling').doc(id).update({
         'currentReading': double.parse(currentReading),
         'totalCubic': totalCubic,
         'billingPrice': totalPrice,
@@ -592,8 +1140,8 @@ class BillingContentPage extends HookWidget {
         'flatRate': '',
         'dateRead': DateTime.now()
       }).then((value) {
-        getArea();
-        fBilling.value = getArea();
+        getArea(context, '');
+        fBilling.value = getArea(context, '');
       });
     }
   }
@@ -686,6 +1234,7 @@ class BillingContentPage extends HookWidget {
             isDestructiveAction: true,
             onPressed: () {
               updateFlatRateMember(
+                context,
                 id,
                 controllers.text,
                 fBilling,
@@ -699,22 +1248,21 @@ class BillingContentPage extends HookWidget {
     );
   }
 
-  Future<void> updateFlatRateMember(
-      String id, String flatRatePrice, ValueNotifier fBilling) async {
+  Future<void> updateFlatRateMember(BuildContext context, String id,
+      String flatRatePrice, ValueNotifier fBilling) async {
     if (flatRatePrice.isNotEmpty) {
-      FirebaseFirestore.instance
-          .collection('membersBilling')
-          .doc(id)
-          .update({
+      FirebaseFirestore.instance.collection('membersBilling').doc(id).update({
         'flatRatePrice': double.parse(flatRatePrice),
         'billingPrice': double.parse(flatRatePrice),
         'flatRate': flatRatePrice
       }).then((value) {
-        getArea();
-        fBilling.value = getArea();
+        getArea(context, '');
+        fBilling.value = getArea(context, '');
       });
     }
   }
+
+
 
   Future<void> listMenuModal(BuildContext context) async {
     int? value = await showCupertinoModalPopup<int>(
@@ -733,8 +1281,20 @@ class BillingContentPage extends HookWidget {
     print(value);
   }
 
-  _modalBuilder(BuildContext context, String memberID, String name,
-      ValueNotifier fBilling, bool toBill , String flatRatePrice, member, billingPrice, areaID, connID,balance,dateBill,dueDateBalance) {
+  _modalBuilder(
+      BuildContext context,
+      String memberID,
+      String name,
+      ValueNotifier fBilling,
+      bool toBill,
+      String flatRatePrice,
+      member,
+      billingPrice,
+      areaID,
+      connID,
+      balance,
+      dateBill,
+      dueDateBalance) {
     return CupertinoModalPopupRoute(
       builder: (BuildContext context) {
         return CupertinoActionSheet(
@@ -743,54 +1303,70 @@ class BillingContentPage extends HookWidget {
             CupertinoActionSheetAction(
               child: Text(toBill ? 'To Bill' : 'Bill Now'),
               onPressed: () async {
-                 if (openBilling) {
-                  
-                  if(!toBill){
+                if (openBilling) {
+                  if (!toBill) {
                     await showDialog<bool>(
                       context: context,
-                      builder: (context) => BillingPDialog(billingID: docID, memberID: memberID, name: name, 
-                      billingPrice: billingPrice, billYear: billYear, billMonth: billMonth,
-                      memID: member, areaID: areaID, connID: connID, balance: balance, dateBill: dateBill,dueDateBalance: dueDateBalance),
+                      builder: (context) => BillingPDialog(
+                          billingID: docID,
+                          memberID: memberID,
+                          name: name,
+                          billingPrice: billingPrice,
+                          billYear: billYear,
+                          billMonth: billMonth,
+                          memID: member,
+                          areaID: areaID,
+                          connID: connID,
+                          balance: balance,
+                          dateBill: dateBill,
+                          dueDateBalance: dueDateBalance),
                     );
-
-                  }else{
-                    updateBillingToBill(memberID, fBilling);
+                  } else {
+                    updateBillingToBill(context, memberID, fBilling);
                   }
-                 }
-                 fBilling.value = getArea();
+                }
+                fBilling.value = getArea(context, '');
                 Navigator.pop(context);
               },
             ),
-            if(double.parse(billingPrice) > 0 && toBill)
-            CupertinoActionSheetAction(
-              child: const Text('Pay'),
-              onPressed: ()async {
-                Navigator.pop(context);
-                 if (openBilling) {
-                await showDialog<bool>(
+            if (double.parse(billingPrice) > 0 && toBill)
+              CupertinoActionSheetAction(
+                child: const Text('Pay'),
+                onPressed: () async {
+                  Navigator.pop(context);
+                  if (openBilling) {
+                    await showDialog<bool>(
                       context: context,
-                      builder: (context) => BillingPayDialog(billingID: docID, memberID: memberID, name: name, 
-                      billingPrice: billingPrice, billYear: billYear, billMonth: billMonth,
-                      memID: member, areaID: areaID, connID: connID, balance: balance, dateBill: dateBill,dueDateBalance: dueDateBalance),
+                      builder: (context) => BillingPayDialog(
+                          billingID: docID,
+                          memberID: memberID,
+                          name: name,
+                          billingPrice: billingPrice,
+                          billYear: billYear,
+                          billMonth: billMonth,
+                          memID: member,
+                          areaID: areaID,
+                          connID: connID,
+                          balance: balance,
+                          dateBill: dateBill,
+                          dueDateBalance: dueDateBalance),
                     );
-                 }
-              },
-            ),
+                  }
+                },
+              ),
             CupertinoActionSheetAction(
               child: const Text('Flat Rate'),
               onPressed: () {
                 if (openBilling) {
                   Navigator.pop(context);
                   _updateFlatRateDialog(
-                      context,
-                      memberID,
-                      name,
-                      fBilling,
-                      flatRatePrice,
-                      member);
+                      context, memberID, name, fBilling, flatRatePrice, member);
                 }
-                
               },
+            ),
+            CupertinoActionSheetAction(
+              child: const Text('Print'),
+              onPressed: () {},
             ),
             CupertinoActionSheetAction(
               child: const Text('Member Chart'),
@@ -805,24 +1381,17 @@ class BillingContentPage extends HookWidget {
   }
 
   Future<void> updateBillingToBill(
-      String memberIdBill, ValueNotifier fBilling) async {
+      BuildContext context, String memberIdBill, ValueNotifier fBilling) async {
     FirebaseFirestore.instance
         .collection('membersBilling')
         .doc(memberIdBill)
-        .update({
-      'toBill': false,
-      'dateBill': DateTime.now()
-    }).then((value) {
-      fBilling.value = getArea();
+        .update({'toBill': false, 'dateBill': DateTime.now()}).then((value) {
+      fBilling.value = getArea(context, '');
     });
   }
 
-
-    void payDialog(
-      BuildContext context,
-      String id,
-      String name,
-      String billingPrice) {
+  void payDialog(
+      BuildContext context, String id, String name, String billingPrice) {
     TextEditingController controllers = new TextEditingController();
     showCupertinoModalPopup<void>(
       barrierDismissible: false,
@@ -858,9 +1427,7 @@ class BillingContentPage extends HookWidget {
           ),
           CupertinoDialogAction(
             isDestructiveAction: true,
-            onPressed: () {
-
-            },
+            onPressed: () {},
             child: const Text('Yes'),
           ),
         ],

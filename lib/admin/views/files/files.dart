@@ -86,7 +86,7 @@ class FilesPage extends HookWidget {
               borderRadius: BorderRadius.circular(20),
             ),
             child: SizedBox(
-              height: MediaQuery.of(context).size.height - 220,
+              height: MediaQuery.of(context).size.height - 200,
               child: Padding(
                 padding: EdgeInsets.fromLTRB(20, 20, 20, 20),
                 child: Row(children: [bodyWidget(context, menuSelect)]),
