@@ -1,12 +1,37 @@
 import 'package:agus/constants/constant.dart';
 import 'package:agus/providers/billings_provider.dart';
 import 'package:agus/providers/home_provider.dart';
+import 'package:agus/providers/test_provider.dart';
 import 'package:agus/route_generator.dart';
 import 'package:agus/routes.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
+
+
+Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
+  await setupFlutterNotifications();
+}
+
+
+
+bool isFlutterLocalNotificationsInitialized = false;
+
+Future<void> setupFlutterNotifications() async {
+  if (isFlutterLocalNotificationsInitialized) {
+    return;
+  }
+  await FirebaseMessaging.instance.setForegroundNotificationPresentationOptions(
+    alert: true,
+    badge: true,
+    sound: true,
+  );
+  isFlutterLocalNotificationsInitialized = true;
+}
+
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -16,10 +41,12 @@ void main() async {
       messagingSenderId: "734439168307",
       projectId: "agus-9b8da",
     ),);
+  FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
   runApp(
     MultiProvider(providers: [
       ChangeNotifierProvider(create: (_) => HomeProvider()),
       ChangeNotifierProvider(create: (_) => BillingsProvider()),
+      ChangeNotifierProvider(create: (_) => TestProvider()),
     ],child: const MyApp(),)
   
   );

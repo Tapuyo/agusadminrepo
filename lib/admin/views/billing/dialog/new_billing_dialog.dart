@@ -1,9 +1,13 @@
+import 'dart:convert';
+
 import 'package:agus/admin/models/flat_rate_model.dart';
 import 'package:agus/constants/constant.dart';
+import 'package:agus/constants/string.dart';
 import 'package:intl/intl.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-
+import 'package:http/http.dart' as http;
+import '../../../../helpers/sendNotifs.dart';
 import '../../../../utils/custom_menu_button.dart';
 
 class NewBillingDialog extends StatefulWidget {
@@ -329,7 +333,7 @@ class _NewBillingDialog extends State<NewBillingDialog> {
                 double flatRatePrice = doc['flatRatePrice'];
                 String memberId = doc['memberId'];
                 String name = doc['name'];
-                double totalBalance = doc['balance'];
+                double totalBalance = doc['billingPrice'];
                 DateTime dueBalance = (doc['dateBill'] as Timestamp).toDate();
                 await copyPrevBillToLatest(currentbillId, areaId, connectionId,
                     currentReading, flatRate, flatRatePrice, memberId, name,dueBalance,totalBalance);
@@ -385,14 +389,18 @@ class _NewBillingDialog extends State<NewBillingDialog> {
 
   Future<void> closeOldBill(
       String docID) async {
+      FCMHelper fcmHelper = FCMHelper();
+      
       FirebaseFirestore.instance
           .collection('billing')
           .doc(docID)
           .update({
         'status': 'close',
       }).then((value) {
-
+        fcmHelper.sendNotif('Piwas', 'New reading form are now available for download.');
       });
     
   }
+
+
 }

@@ -8,6 +8,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
 import '../../../../helpers/date_to_word.dart';
+import '../../../../helpers/sendNotifs.dart';
 import '../../../../utils/custom_menu_button.dart';
 
 class BillingPDialog extends StatefulWidget {
@@ -72,9 +73,12 @@ class _BillingPDialog extends State<BillingPDialog> {
     dueDate = DateTime.parse(widget.dueDateBalance).add(const Duration(days: 9));
     final difference = DateTime.now().difference(dueDate).inDays;
 
+    print(dueDate.toString());
+
     print(difference);
     
     dueBalance = dueDate.toString();
+    
     balPercent = double.parse(widget.balance) * 0.02;
     totalPercentAday = balPercent * (difference);
     if(difference < 0){
@@ -199,7 +203,7 @@ class _BillingPDialog extends State<BillingPDialog> {
                               const Spacer(),
                               Text(
                                 '${stringDateToWord(DateFormat('yyyy-MM-dd')
-                                    .format(dueDate)
+                                    .format(DateTime.parse(widget.dueDateBalance))
                                     .toString())}  ₱ ${totalPercentAday.toStringAsFixed(2)}',
                                 style: kTextStyleHeadline2Dark,
                               ),
@@ -292,10 +296,13 @@ class _BillingPDialog extends State<BillingPDialog> {
 
  
   Future<void> updateBillingToBill(String memberIdBill) async {
+         FCMHelper fcmHelper = FCMHelper();
     FirebaseFirestore.instance
         .collection('membersBilling')
         .doc(memberIdBill)
-        .update({'toBill': true, 'dateBill': DateTime.now(),'totalBill': double.parse(finalBill),'balancePercent':balancewithpercent}).then((value) {});
+        .update({'toBill': true, 'dateBill': DateTime.now(),'totalBill': double.parse(finalBill),'balancePercent':balancewithpercent}).then((value) {
+           fcmHelper.sendNotif('Piwas','${widget.name} is ready to bill');
+        });
   }
 
   getCustomFormattedDateTime(String givenDateTime, String dateFormat) {
@@ -329,6 +336,7 @@ class _BillingPDialog extends State<BillingPDialog> {
   }
 
   Future<void> addPaymentHistory(String billID) async {
+
     FirebaseFirestore.instance
         .collection('membersBilling')
         .doc(billID)
@@ -342,6 +350,7 @@ class _BillingPDialog extends State<BillingPDialog> {
       'user': 'admin',
 
     }).then((value) {
+     
       setState(() {
         balance = 00;
         billAmount = 00;

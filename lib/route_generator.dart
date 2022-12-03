@@ -13,7 +13,7 @@ class RouteGenerator {
       case Routes.splash:
         return CupertinoPageRoute(builder: (_) => const SplashScreen());
       case Routes.web:
-        return CupertinoPageRoute(builder: (_) => const WebHome());
+        return CupertinoPageRoute(builder: (_) =>  WebHome());
 
       default:
         return _errorRoute();

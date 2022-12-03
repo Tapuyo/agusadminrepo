@@ -14,6 +14,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:provider/provider.dart';
 
+import '../../../helpers/sendNotifs.dart';
 import 'dialog/billing_dialog.dart';
 
 class BillingContentPage extends HookWidget {
@@ -1322,14 +1323,14 @@ class BillingContentPage extends HookWidget {
                           dueDateBalance: dueDateBalance),
                     );
                   } else {
-                    updateBillingToBill(context, memberID, fBilling);
+                    updateBillingToBill(context, memberID, fBilling,name);
                   }
                 }
                 fBilling.value = getArea(context, '');
                 Navigator.pop(context);
               },
             ),
-            if (double.parse(billingPrice) > 0 && toBill)
+            if (double.parse(billingPrice) > 0 || double.parse(balance) > 0 && toBill)
               CupertinoActionSheetAction(
                 child: const Text('Pay'),
                 onPressed: () async {
@@ -1381,13 +1382,16 @@ class BillingContentPage extends HookWidget {
   }
 
   Future<void> updateBillingToBill(
-      BuildContext context, String memberIdBill, ValueNotifier fBilling) async {
+      BuildContext context, String memberIdBill, ValueNotifier fBilling, String name) async {
+        FCMHelper fcmHelper = FCMHelper();
     FirebaseFirestore.instance
         .collection('membersBilling')
         .doc(memberIdBill)
         .update({'toBill': false, 'dateBill': DateTime.now()}).then((value) {
       fBilling.value = getArea(context, '');
+      fcmHelper.sendNotif('Piwas', '$name are in review for billing.');
     });
+
   }
 
   void payDialog(

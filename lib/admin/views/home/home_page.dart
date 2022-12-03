@@ -111,13 +111,13 @@ class HomePage extends HookWidget {
                         circleRatio: 12),
                     ChipLabel(
                         textTitle: 'Recieved',
-                        textLabel: 'Php ${countRecMembers.value}',
+                        textLabel: 'Php ${countRecMembers.value.toStringAsFixed(2)}',
                         onPressed: () {},
                         circleColor: Colors.green,
                         circleRatio: 12),
                     ChipLabel(
                         textTitle: 'Balance',
-                        textLabel: 'Php ${countUnrecMembers.value}',
+                        textLabel: 'Php ${countUnrecMembers.value.toStringAsFixed(2)}',
                         onPressed: () {},
                         circleColor: Colors.purple,
                         circleRatio: 12)

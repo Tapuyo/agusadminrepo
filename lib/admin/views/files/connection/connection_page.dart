@@ -124,7 +124,7 @@ class ConnectionPage extends HookWidget {
   }
 
   Widget connectionList(BuildContext context, ValueNotifier connList) {
-    return Expanded(
+    return connList.value.isNotEmpty ?Expanded(
                 child: ListView.builder(
                     //shrinkWrap: true,
                     itemCount: connList.value.length,
@@ -168,6 +168,6 @@ class ConnectionPage extends HookWidget {
                         ],
                       );
                     }),
-              );
+              ):const Center(child: CircularProgressIndicator(),);
   }
 }

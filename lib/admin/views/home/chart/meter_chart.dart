@@ -108,7 +108,9 @@ class PieChart2State extends State {
                 ),
                 Row(
                   children: <Widget>[
-                    
+                    const SizedBox(
+                      height: 5,
+                    ),
                     Expanded(
                       child: areaMeterList.isNotEmpty
                           ? AspectRatio(

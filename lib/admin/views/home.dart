@@ -5,17 +5,28 @@ import 'package:agus/admin/views/files/files.dart';
 import 'package:agus/admin/views/home/home_page.dart';
 import 'package:agus/admin/views/report/report.dart';
 import 'package:agus/constants/constant.dart';
+import 'package:agus/test_provider.dart';
 import 'package:agus/utils/custom_menu_button.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 
 class WebHome extends HookWidget {
-  const WebHome({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     final ismenuCollapse = useState<bool>(true);
     final indexMenu = useState<int>(0);
+
+
+    useEffect(() {
+      Future.microtask(() async {
+       initFCM();
+      });
+      return;
+    }, const []);
+
+
     return Scaffold(
       backgroundColor: Color.fromARGB(255, 207, 229, 240),
       body: Column(
@@ -75,7 +86,6 @@ class WebHome extends HookWidget {
                         children: [
                           MenuButton(
                             isSelect: indexMenu.value == 0,
-                              key: key,
                               onPressed: () {
                                 indexMenu.value = 0;
                               },
@@ -85,7 +95,6 @@ class WebHome extends HookWidget {
                               padding: const EdgeInsets.fromLTRB(5, 0, 0, 0)),
                           MenuButton(
                             isSelect: indexMenu.value == 2,
-                              key: key,
                               onPressed: () {
                                 indexMenu.value = 2;
                               },
@@ -95,7 +104,6 @@ class WebHome extends HookWidget {
                               padding: const EdgeInsets.fromLTRB(5, 0, 0, 0)),
                           MenuButton(
                             isSelect: indexMenu.value == 1,
-                              key: key,
                               onPressed: () {
                                 indexMenu.value = 1;
                               },
@@ -105,7 +113,6 @@ class WebHome extends HookWidget {
                               padding: const EdgeInsets.fromLTRB(5, 0, 0, 0)),
                           MenuButton(
                             isSelect: indexMenu.value == 3,
-                              key: key,
                               onPressed: () {
                                 indexMenu.value = 3;
                               },
@@ -115,7 +122,6 @@ class WebHome extends HookWidget {
                               padding: const EdgeInsets.fromLTRB(5, 0, 0, 0)),
                           MenuButton(
                             isSelect: indexMenu.value == 4,
-                              key: key,
                               onPressed: () {
                                 indexMenu.value = 4;
                               },
@@ -201,10 +207,42 @@ class WebHome extends HookWidget {
           return  ReportPage();
         }
 
+      case 4:
+        {
+          return   TestProviderWidget();
+        }
+
       default:
         {
           return const HomePage();
         }
     }
   }
+
+  void initFCM(){
+
+  FirebaseMessaging.instance
+        .getInitialMessage()
+        .then((value) {
+
+    });
+
+
+
+    FirebaseMessaging.instance.getToken().then((value){
+      print('TOKEN ${value.toString()}');
+    });
+
+
+    FirebaseMessaging.onMessageOpenedApp.listen((message) {
+      print('Message clicked!');
+    });
+
+    FirebaseMessaging.instance.setForegroundNotificationPresentationOptions(
+      alert: true, // Required to display a heads up notification
+      badge: true,
+      sound: true,
+    );
+  }
 }
+
